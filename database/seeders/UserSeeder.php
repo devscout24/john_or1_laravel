@@ -15,53 +15,26 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $admin = User::firstOrCreate(
-            ['email' => 'admin@beachapp.com'],
+            ['email' => 'admin@admin.com'],
             [
                 'name' => 'Super Admin',
                 'username' => 'admin',
                 'password' => Hash::make('12345678'),
                 'status' => 'active',
-                'provider_status' => 'approved',
             ]
         );
         $admin->assignRole('admin');
-        $admin_2 = User::firstOrCreate(
-            ['email' => 'manjurulalammahi@gmail.com'],
-            [
-                'name' => 'Mahi Alam',
-                'username' => 'mahi',
-                'password' => Hash::make('12345678'),
-                'status' => 'active',
-                'provider_status' => 'approved',
-            ]
-        );
-        $admin_2->assignRole('admin');
-
-
-        // PROVIDER USER
-        $provider = User::firstOrCreate(
-            ['email' => 'provider@beachapp.com'],
-            [
-                'name'            => 'Provider User',
-                'username'        => 'provider123',
-                'password'        => Hash::make('12345678'),
-                'status'          => 'active',
-                'provider_status' => 'approved',
-            ]
-        );
-        $provider->assignRole('provider');
 
         // CUSTOMER USER
-        $customer = User::firstOrCreate(
-            ['email' => 'customer@beachapp.com'],
+        $user = User::firstOrCreate(
+            ['email' => 'user@user.com'],
             [
-                'name' => 'Customer User',
-                'username' => 'customer456',
+                'name' => 'Demo User',
+                'username' => 'demo_user',
                 'password' => Hash::make('12345678'),
                 'status' => 'active',
-                'provider_status' => 'pending',
             ]
         );
-        $customer->assignRole('customer');
+        $user->assignRole('user');
     }
 }

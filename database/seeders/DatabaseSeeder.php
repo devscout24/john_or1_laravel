@@ -14,6 +14,16 @@ class DatabaseSeeder extends Seeder
             NotificationSeeder::class,
             CompanySettingsSeeder::class,
             DynamicPageSeeder::class,
+
+            LanguageSeeder::class,
+            CategorySeeder::class,
+            SectionSeeder::class,
+            ContentSeeder::class,
+            EpisodeSeeder::class,
+            PlanSeeder::class,
+            CoinPackageSeeder::class,
+            RewardSeeder::class,
+            DemoDataSeeder::class,
         ]);
     }
 }

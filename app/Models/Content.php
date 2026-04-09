@@ -26,32 +26,40 @@ class Content extends Model
     ];
 
     // Episodes (for series)
-    // public function episodes()
-    // {
-    //     return $this->hasMany(Episode::class);
-    // }
+    public function episodes()
+    {
+        return $this->hasMany(Episode::class);
+    }
 
-    // // Categories (many to many)
-    // public function categories()
-    // {
-    //     return $this->belongsToMany(Category::class, 'content_categories');
-    // }
+    // Categories (many to many)
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'content_categories');
+    }
 
-    // // Watch history
-    // public function watchHistories()
-    // {
-    //     return $this->hasMany(WatchHistory::class);
-    // }
+    // Sections (many to many)
+    public function sections()
+    {
+        return $this->belongsToMany(Section::class, 'section_contents')
+            ->withPivot('order')
+            ->orderBy('pivot_order');
+    }
 
-    // // Favorites
-    // public function favorites()
-    // {
-    //     return $this->hasMany(Favorite::class);
-    // }
+    // Watch history
+    public function watchHistories()
+    {
+        return $this->hasMany(WatchHistory::class);
+    }
 
-    // // Ad sessions
-    // public function adSessions()
-    // {
-    //     return $this->hasMany(AdSession::class);
-    // }
+    // Favorites
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    // Ad sessions
+    public function adSessions()
+    {
+        return $this->hasMany(AdSession::class);
+    }
 }

@@ -31,8 +31,8 @@ class Episode extends Model
         return $this->belongsTo(Content::class);
     }
 
-    // public function watchHistories()
-    // {
-    //     return $this->hasMany(WatchHistory::class);
-    // }
+    public function watchHistories()
+    {
+        return $this->hasMany(WatchHistory::class);
+    }
 }
