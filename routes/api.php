@@ -1,0 +1,51 @@
+<?php
+
+use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\API\PolicyController;
+use App\Http\Controllers\API\ProfileController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+Route::controller(AuthController::class)->group(function () {
+    Route::post('/user-signup', 'signup');
+    Route::post('/user-signin', 'signin');
+    Route::post('/user-logout', 'logout');
+    Route::post('/user-delete', 'deleteUser');
+
+    // Store FCM Token
+    Route::post('/store-user-fcm-token', 'storeFcmToken');
+    Route::post('/delete-user-fcm-token', 'deleteFcmToken');
+
+    // OTP verify
+    Route::post('/forgot-password', 'sendOtp');
+    Route::post('/verify-otp', 'verifyOtp');
+    Route::post('/reset-password', 'resetPassword');
+});
+
+Route::controller(ProfileController::class)->middleware('auth:api')->group(function () {
+    Route::get('/user-profile', 'profile');
+    Route::post('/update-user-profile', 'updateProfile');
+    Route::post('/change-user-password', 'changePassword');
+});
+
+Route::middleware('auth:api')->controller(NotificationController::class)->group(function () {
+    Route::get('/notifications', 'notification');
+
+    // Mark all read / unread
+    Route::post('/notifications/mark-all-read', 'markAllRead');
+    Route::post('/notifications/mark-all-unread', 'markAllUnread');
+
+    // Delete all
+    Route::post('/notifications/delete-all', 'deleteAll');
+
+    // Single operations
+    Route::post('/notifications/delete', 'deleteNotification');
+    Route::post('/notifications/mark-read', 'markNotificationRead');
+    Route::post('/notifications/mark-unread', 'markNotificationUnread');
+});
+
+Route::controller(PolicyController::class)->middleware('auth:api')->group(function () {
+    Route::get('/get-policies-beach', 'getBeachPolicy');
+    Route::get('/get-policies-disclaimers', 'getDisclaimersPolicy');
+});
