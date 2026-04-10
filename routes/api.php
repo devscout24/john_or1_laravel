@@ -55,6 +55,10 @@ Route::controller(PolicyController::class)->middleware(JWTMiddleware::class)->gr
 
 Route::controller(DiscoverController::class)->middleware(JWTMiddleware::class)->group(function () {
     Route::get('/discover', 'index');
+    Route::get('/discover/{contentId}', 'show');
+    Route::post('/discover/{contentId}/unlock-with-coins', 'unlockWithCoins');
+    Route::post('/discover/{contentId}/unlock-with-ad', 'unlockWithAd');
+    Route::post('/episodes/{episodeId}/watch-progress', 'updateEpisodeProgress');
 });
 
 Route::controller(CoinStoreController::class)->middleware(JWTMiddleware::class)->group(function () {
