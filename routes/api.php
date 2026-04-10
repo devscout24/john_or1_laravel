@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\CoinStoreController;
 use App\Http\Controllers\API\DiscoverController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\PolicyController;
@@ -54,4 +55,8 @@ Route::controller(PolicyController::class)->middleware(JWTMiddleware::class)->gr
 
 Route::controller(DiscoverController::class)->middleware(JWTMiddleware::class)->group(function () {
     Route::get('/discover', 'index');
+});
+
+Route::controller(CoinStoreController::class)->middleware(JWTMiddleware::class)->group(function () {
+    Route::get('/coin-store', 'index');
 });
