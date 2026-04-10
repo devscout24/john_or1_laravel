@@ -1,35 +1,34 @@
 <?php
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\DiscoverController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\PolicyController;
 use App\Http\Controllers\API\ProfileController;
-use Illuminate\Http\Request;
+use App\Http\Middleware\JWTMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->group(function () {
-    Route::post('/user-signup', 'signup');
-    Route::post('/user-signin', 'signin');
+    Route::post('/user-social-signin', 'socialSignin');
+    Route::post('/user-guest-signin', 'guestSignin');
     Route::post('/user-logout', 'logout');
-    Route::post('/user-delete', 'deleteUser');
 
     // Store FCM Token
     Route::post('/store-user-fcm-token', 'storeFcmToken');
-    Route::post('/delete-user-fcm-token', 'deleteFcmToken');
-
-    // OTP verify
-    Route::post('/forgot-password', 'sendOtp');
-    Route::post('/verify-otp', 'verifyOtp');
-    Route::post('/reset-password', 'resetPassword');
+    Route::post('/delete-user-fcm-token', 'deleteFcmToken');;
 });
 
-Route::controller(ProfileController::class)->middleware('auth:api')->group(function () {
+Route::middleware(JWTMiddleware::class)->controller(AuthController::class)->group(function () {
+    Route::post('/user-delete', 'deleteUser');
+});
+
+Route::controller(ProfileController::class)->middleware(JWTMiddleware::class)->group(function () {
     Route::get('/user-profile', 'profile');
     Route::post('/update-user-profile', 'updateProfile');
     Route::post('/change-user-password', 'changePassword');
 });
 
-Route::middleware('auth:api')->controller(NotificationController::class)->group(function () {
+Route::middleware(JWTMiddleware::class)->controller(NotificationController::class)->group(function () {
     Route::get('/notifications', 'notification');
 
     // Mark all read / unread
@@ -45,7 +44,14 @@ Route::middleware('auth:api')->controller(NotificationController::class)->group(
     Route::post('/notifications/mark-unread', 'markNotificationUnread');
 });
 
-Route::controller(PolicyController::class)->middleware('auth:api')->group(function () {
+Route::controller(PolicyController::class)->middleware(JWTMiddleware::class)->group(function () {
     Route::get('/get-policies-beach', 'getBeachPolicy');
     Route::get('/get-policies-disclaimers', 'getDisclaimersPolicy');
+});
+
+
+// Production routes
+
+Route::controller(DiscoverController::class)->middleware(JWTMiddleware::class)->group(function () {
+    Route::get('/discover', 'index');
 });

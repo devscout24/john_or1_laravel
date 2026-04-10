@@ -9,6 +9,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 
 class JWTMiddleware
 {
@@ -21,15 +22,36 @@ class JWTMiddleware
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            return $next($request);
+        } catch (TokenExpiredException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Token has expired',
+                'data' => [],
+                'code' => 401,
+            ], 401);
+        } catch (TokenInvalidException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Token is invalid',
+                'data' => [],
+                'code' => 401,
+            ], 401);
+        } catch (TokenBlacklistedException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Token has been blacklisted',
+                'data' => [],
+                'code' => 401,
+            ], 401);
         } catch (Exception $e) {
-            if ($e instanceof TokenInvalidException) {
-                return response()->json(['status' => 'Token is Invalid'], 401);
-            } else if ($e instanceof TokenExpiredException) {
-                return response()->json(['status' => 'Token is Expired'], 401);
-            } else {
-                return response()->json(['status' => 'Unauthorised'], 401);
-            }
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized: ' . ($e->getMessage() ?: 'Invalid or missing token'),
+                'data' => [],
+                'code' => 401,
+            ], 401);
         }
+
+        return $next($request);
     }
 }
