@@ -9,6 +9,8 @@ use App\Http\Controllers\API\ProfileController;
 use App\Http\Middleware\JWTMiddleware;
 use Illuminate\Support\Facades\Route;
 
+// FTP Working
+
 Route::controller(AuthController::class)->group(function () {
     Route::post('/user-social-signin', 'socialSignin');
     Route::post('/user-guest-signin', 'guestSignin');
