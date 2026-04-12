@@ -6,6 +6,7 @@ use App\Http\Controllers\API\DiscoverController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\PolicyController;
 use App\Http\Controllers\API\ProfileController;
+use App\Http\Controllers\API\SavedSeriesController;
 use App\Http\Middleware\JWTMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -65,4 +66,10 @@ Route::controller(DiscoverController::class)->middleware(JWTMiddleware::class)->
 
 Route::controller(CoinStoreController::class)->middleware(JWTMiddleware::class)->group(function () {
     Route::get('/coin-store', 'index');
+});
+
+Route::controller(SavedSeriesController::class)->middleware(JWTMiddleware::class)->group(function () {
+    Route::get('/saved-series', 'index');
+    Route::post('/saved-series/{contentId}/add', 'add');
+    Route::post('/saved-series/{contentId}/remove', 'remove');
 });
