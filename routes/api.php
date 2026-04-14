@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CoinStoreController;
+use App\Http\Controllers\API\DailyLoginRewardController;
 use App\Http\Controllers\API\DiscoverController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\PolicyController;
@@ -29,7 +30,6 @@ Route::middleware(JWTMiddleware::class)->controller(AuthController::class)->grou
 Route::controller(ProfileController::class)->middleware(JWTMiddleware::class)->group(function () {
     Route::get('/user-profile', 'profile');
     Route::post('/update-user-profile', 'updateProfile');
-    Route::post('/change-user-password', 'changePassword');
 });
 
 Route::middleware(JWTMiddleware::class)->controller(NotificationController::class)->group(function () {
@@ -59,8 +59,8 @@ Route::controller(PolicyController::class)->middleware(JWTMiddleware::class)->gr
 Route::controller(DiscoverController::class)->middleware(JWTMiddleware::class)->group(function () {
     Route::get('/discover', 'index');
     Route::get('/discover/{contentId}', 'show');
-    Route::post('/discover/{contentId}/unlock-with-coins', 'unlockWithCoins');
-    Route::post('/discover/{contentId}/unlock-with-ad', 'unlockWithAd');
+    Route::post('/episodes/{episodeId}/unlock-with-coins', 'unlockWithCoins');
+    Route::post('/episodes/{episodeId}/unlock-with-ad', 'unlockWithAd');
     Route::post('/episodes/{episodeId}/watch-progress', 'updateEpisodeProgress');
 });
 
@@ -72,4 +72,9 @@ Route::controller(SavedSeriesController::class)->middleware(JWTMiddleware::class
     Route::get('/saved-series', 'index');
     Route::post('/saved-series/{contentId}/add', 'add');
     Route::post('/saved-series/{contentId}/remove', 'remove');
+});
+
+Route::controller(DailyLoginRewardController::class)->middleware(JWTMiddleware::class)->group(function () {
+    Route::get('/daily-login-rewards', 'index');
+    Route::post('/daily-login-rewards/claim', 'claim');
 });

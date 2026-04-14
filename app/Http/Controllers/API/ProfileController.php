@@ -12,22 +12,46 @@ use Illuminate\Support\Facades\Validator;
 class ProfileController extends Controller
 {
     use ApiResponse;
+
+    private function authenticatedUser(): ?User
+    {
+        $user = Auth::guard('api')->user();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    private function avatarUrl(?string $avatar): string
+    {
+        $avatarPath = $avatar ?: 'user.png';
+
+        if (preg_match('/^https?:\/\//i', $avatarPath)) {
+            return $avatarPath;
+        }
+
+        return asset($avatarPath);
+    }
+
     // Profile
     public function profile()
     {
-        $user = User::where('id', Auth::guard('api')->id())->first();
+        $user = $this->authenticatedUser();
 
         if (!$user) {
-            return $this->error('User not found Or Invalid Token', 404);
+            return $this->error([], 'User not found or invalid token', 401);
         }
 
         $profile_data = [
+            'id' => $user->id,
             'name' => $user->name,
+            'username' => $user->username,
             'email' => $user->email,
-            'profile_photo' => asset($user->avatar ?? 'user.png'),
+            'profile_photo' => $this->avatarUrl($user->avatar),
             'address' => $user->address,
             'phone' => $user->phone,
             'location' => $user->location,
+            'title' => $user->title,
+            'language' => $user->language,
+            'provider' => $user->provider,
         ];
 
         return $this->success($profile_data, 'Profile Information', 200);
@@ -35,79 +59,69 @@ class ProfileController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $user = User::where('id', Auth::guard('api')->id())->first();
+        $user = $this->authenticatedUser();
 
         if (!$user) {
-            return $this->error('User not found Or Invalid Token', 404);
+            return $this->error([], 'User not found or invalid token', 401);
         }
 
         $validate = Validator::make($request->all(), [
-            'name'     => 'sometimes|string|max:255',
+            'name'     => 'sometimes|nullable|string|max:255',
             'email'    => 'sometimes|email|max:255|unique:users,email,' . $user->id,
-            'phone'    => 'sometimes|string|max:20',
-            'address'  => 'sometimes|string|max:500',
-            'location' => 'sometimes|string|max:255',
-            'avatar'   => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'phone'    => 'sometimes|nullable|string|max:20',
+            'address'  => 'sometimes|nullable|string|max:500',
+            'location' => 'sometimes|nullable|string|max:255',
+            'avatar'   => 'sometimes|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         if ($validate->fails()) {
-            return $this->error($validate->errors()->first(), $validate->errors()->first(), 200);
+            return $this->error($validate->errors(), $validate->errors()->first(), 422);
         }
 
         try {
-            if ($request->has('name')) {
+            if ($request->exists('name')) {
                 $user->name = $request->name;
             }
-            if ($request->has('email')) {
+            if ($request->exists('email')) {
                 $user->email = $request->email;
             }
-            if ($request->has('phone')) {
+            if ($request->exists('phone')) {
                 $user->phone = $request->phone;
             }
-            if ($request->has('address')) {
+            if ($request->exists('address')) {
                 $user->address = $request->address;
             }
-            if ($request->has('location')) {
+            if ($request->exists('location')) {
                 $user->location = $request->location;
             }
+
             if ($request->hasFile('avatar')) {
                 $oldImage = $user->avatar != 'user.png' ? $user->avatar : null;
                 $avatar = $this->uploadImage($request->file('avatar'), $oldImage, 'uploads/avatar', 300, 300, 'avatar_' . $user->id);
                 $user->avatar = $avatar;
             }
 
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
+
             $user->save();
 
-            return $this->success([], 'Profile updated successfully', 200);
+            return $this->success([
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'profile_photo' => $this->avatarUrl($user->avatar),
+                'address' => $user->address,
+                'phone' => $user->phone,
+                'location' => $user->location,
+                'title' => $user->title,
+                'language' => $user->language,
+                'provider' => $user->provider,
+            ], 'Profile updated successfully', 200);
         } catch (\Exception $e) {
-            return $this->error('Failed to update profile: ' . $e->getMessage(), 500);
+            return $this->error([], 'Failed to update profile: ' . $e->getMessage(), 500);
         }
-    }
-
-    public function changePassword(Request $request)
-    {
-        $user = User::where('id', Auth::guard('api')->id())->first();
-
-        if (!$user) {
-            return $this->error('User not found Or Invalid Token', 404);
-        }
-
-        $validation = Validator::make($request->all(), [
-            'current_password' => 'required|string',
-            'new_password' => 'required|string|min:6|confirmed',
-        ]);
-
-        if ($validation->fails()) {
-            return $this->error($validation->errors()->first(), $validation->errors()->first(), 200);
-        }
-
-        if (!password_verify($request->current_password, $user->password)) {
-            return $this->error([], 'Current password is incorrect', 200);
-        }
-
-        $user->password = bcrypt($request->new_password);
-        $user->save();
-
-        return $this->success(null, 'Password changed successfully', 200);
     }
 }

@@ -20,6 +20,31 @@ class AuthController extends Controller
 {
     use ApiResponse;
 
+    private function buildUniqueUsername(?string $name, ?string $email, string $prefix = 'user'): string
+    {
+        $seed = trim((string) $name);
+
+        if ($seed === '' && $email) {
+            $seed = Str::before($email, '@');
+        }
+
+        if ($seed === '') {
+            $seed = $prefix . '_' . Str::lower(Str::random(6));
+        }
+
+        return $this->checkUserName($seed);
+    }
+
+    private function ensureUsername(User $user, ?string $name = null): void
+    {
+        if (!empty($user->username)) {
+            return;
+        }
+
+        $user->username = $this->buildUniqueUsername($name ?? $user->name, $user->email, $user->provider ?: 'user');
+        $user->save();
+    }
+
     private function buildAuthPayload(User $user, string $token): array
     {
         return [
@@ -85,6 +110,7 @@ class AuthController extends Controller
                     'provider' => $provider,
                     'provider_id' => $providerId,
                     'name' => $verifiedName ?? $user->name,
+                    'username' => $user->username ?: $this->buildUniqueUsername($verifiedName ?? $user->name, $verifiedEmail, $provider),
                     'avatar' => $verifiedAvatar ?? $user->avatar,
                     'last_login_at' => now(),
                 ]);
@@ -101,6 +127,7 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $verifiedName,
                 'email' => $socialEmail,
+                'username' => $this->buildUniqueUsername($verifiedName, $socialEmail, $provider),
                 'password' => Hash::make(Str::random(32)),
                 'avatar' => $verifiedAvatar ?? 'user.png',
                 'provider' => $provider,
@@ -115,6 +142,8 @@ class AuthController extends Controller
         if ($user->status !== 'active') {
             return $this->error([], 'Your account is not active', 403);
         }
+
+        $this->ensureUsername($user, $verifiedName);
 
         $user->update([
             'last_login_at' => now(),
@@ -152,6 +181,7 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $request->name ?: 'Guest User',
                 'email' => $email,
+                'username' => $this->buildUniqueUsername($request->name ?: 'Guest User', $email, 'guest'),
                 'password' => Hash::make(Str::random(32)),
                 'provider' => 'guest',
                 'provider_id' => $guestProviderId,
@@ -161,6 +191,8 @@ class AuthController extends Controller
 
             $user->assignRole('user');
         }
+
+        $this->ensureUsername($user, $request->name);
 
         $user->update([
             'last_login_at' => now(),
