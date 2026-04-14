@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Favorite;
 use App\Models\User;
+use App\Models\WatchHistory;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,6 +42,19 @@ class ProfileController extends Controller
             return $this->error([], 'User not found or invalid token', 401);
         }
 
+        $favoritesCount = Favorite::query()
+            ->where('user_id', $user->id)
+            ->count();
+
+        $watchedSeriesCount = WatchHistory::query()
+            ->where('user_id', $user->id)
+            ->where('progress', '>', 0)
+            ->whereHas('content', function ($query) {
+                $query->where('type', 'series');
+            })
+            ->distinct('content_id')
+            ->count('content_id');
+
         $profile_data = [
             'id' => $user->id,
             'name' => $user->name,
@@ -52,6 +67,9 @@ class ProfileController extends Controller
             'title' => $user->title,
             'language' => $user->language,
             'provider' => $user->provider,
+            'coins' => (int) $user->coins,
+            'favorites_count' => (int) $favoritesCount,
+            'watched_series_count' => (int) $watchedSeriesCount,
         ];
 
         return $this->success($profile_data, 'Profile Information', 200);
