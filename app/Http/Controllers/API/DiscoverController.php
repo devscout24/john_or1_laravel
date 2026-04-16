@@ -13,6 +13,7 @@ use App\Models\Favorite;
 use App\Models\Section;
 use App\Models\Subscription;
 use App\Models\WatchHistory;
+use App\Services\DailyTaskService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -469,6 +470,16 @@ class DiscoverController extends Controller
         $duration = (int) ($episode->duration ?? 0);
         $progress = (int) $validated['progress'];
 
+        $existingHistory = WatchHistory::query()
+            ->where('user_id', $user->id)
+            ->where('content_id', $episode->content_id)
+            ->where('episode_id', $episode->id)
+            ->first();
+
+        $wasCompleted = $duration > 0
+            && $existingHistory
+            && (int) $existingHistory->progress >= $duration;
+
         if ($duration > 0) {
             $progress = min($progress, $duration);
         }
@@ -484,6 +495,12 @@ class DiscoverController extends Controller
                 'last_watched' => now(),
             ]
         );
+
+        $isCompletedNow = $duration > 0 && (int) $watchHistory->progress >= $duration;
+
+        if (! $wasCompleted && $isCompletedNow) {
+            app(DailyTaskService::class)->incrementProgress((int) $user->id, 'watch_episode', 1);
+        }
 
         return $this->success([
             'content_id' => $episode->content_id,

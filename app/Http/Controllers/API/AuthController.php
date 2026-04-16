@@ -35,6 +35,15 @@ class AuthController extends Controller
         return $this->checkUserName($seed);
     }
 
+    private function generateUniqueReferralCode(): string
+    {
+        do {
+            $code = Str::upper(Str::random(8));
+        } while (User::query()->where('referral_code', $code)->exists());
+
+        return $code;
+    }
+
     private function ensureUsername(User $user, ?string $name = null): void
     {
         if (!empty($user->username)) {
@@ -133,6 +142,7 @@ class AuthController extends Controller
                 'provider' => $provider,
                 'provider_id' => $providerId,
                 'status' => 'active',
+                'referral_code' => $this->generateUniqueReferralCode(),
                 'last_login_at' => now(),
             ]);
 
@@ -186,6 +196,7 @@ class AuthController extends Controller
                 'provider' => 'guest',
                 'provider_id' => $guestProviderId,
                 'status' => 'active',
+                'referral_code' => $this->generateUniqueReferralCode(),
                 'last_login_at' => now(),
             ]);
 

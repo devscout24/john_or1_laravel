@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CoinStoreController;
 use App\Http\Controllers\API\DailyLoginRewardController;
+use App\Http\Controllers\API\DailyTaskController;
 use App\Http\Controllers\API\DiscoverController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\PolicyController;
@@ -30,6 +31,7 @@ Route::middleware(JWTMiddleware::class)->controller(AuthController::class)->grou
 Route::controller(ProfileController::class)->middleware(JWTMiddleware::class)->group(function () {
     Route::get('/user-profile', 'profile');
     Route::post('/update-user-profile', 'updateProfile');
+    Route::post('/apply-referral-code', 'applyReferralCode');
 });
 
 Route::middleware(JWTMiddleware::class)->controller(NotificationController::class)->group(function () {
@@ -77,4 +79,10 @@ Route::controller(SavedSeriesController::class)->middleware(JWTMiddleware::class
 Route::controller(DailyLoginRewardController::class)->middleware(JWTMiddleware::class)->group(function () {
     Route::get('/daily-login-rewards', 'index');
     Route::post('/daily-login-rewards/claim', 'claim');
+});
+
+Route::controller(DailyTaskController::class)->middleware(JWTMiddleware::class)->group(function () {
+    Route::get('/daily-tasks', 'index');
+    Route::post('/daily-tasks/{taskId}/claim', 'claim');
+    Route::post('/daily-tasks/progress', 'progress');
 });

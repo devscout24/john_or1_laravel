@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Content;
 use App\Models\Favorite;
+use App\Services\DailyTaskService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -131,6 +132,8 @@ class SavedSeriesController extends Controller
                 'user_id' => $userId,
                 'content_id' => $contentId,
             ]);
+
+            app(DailyTaskService::class)->incrementProgress($userId, 'follow_series', 1);
         }
 
         $savedCount = Favorite::query()
