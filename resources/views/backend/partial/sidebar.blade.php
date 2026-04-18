@@ -128,8 +128,8 @@
                 </li>
 
                 <li class="side-nav-item">
-                    <a data-bs-toggle="collapse" href="#credentials" aria-expanded="false" aria-controls="credentials"
-                        class="side-nav-link">
+                    <a data-bs-toggle="collapse" href="#credentials" aria-expanded="false"
+                        aria-controls="credentials" class="side-nav-link">
                         <span class="menu-icon"><i class="ti ti-key"></i></span>
                         <span class="menu-text" data-lang="credentials">Credentials Settings</span>
                         <span class="menu-arrow"></span>
@@ -137,17 +137,18 @@
                     <div class="collapse" id="credentials" style="height: 100%;">
                         <ul class="sub-menu">
                             <li class="side-nav-item active">
-                                <a href="{{ route('system.settings.credential' , 'Mail') }}" class="side-nav-link">
+                                <a href="{{ route('system.settings.credential', 'Mail') }}" class="side-nav-link">
                                     <span class="menu-text">Mail Settings</span>
                                 </a>
                             </li>
                             <li class="side-nav-item active">
-                                <a href="{{ route('system.settings.credential' , 'Stripe') }}" class="side-nav-link">
+                                <a href="{{ route('system.settings.credential', 'Stripe') }}" class="side-nav-link">
                                     <span class="menu-text">Stripe Settings</span>
                                 </a>
                             </li>
                             <li class="side-nav-item active">
-                                <a href="{{ route('system.settings.credential' , 'GoogleCloud') }}" class="side-nav-link">
+                                <a href="{{ route('system.settings.credential', 'GoogleCloud') }}"
+                                    class="side-nav-link">
                                     <span class="menu-text">Google Console Settings</span>
                                 </a>
                             </li>
@@ -171,7 +172,7 @@
                             </li>
                             <li class="side-nav-item active">
                                 <a href="{{ route('admin.user.create') }}" class="side-nav-link">
-                                    <span class="menu-text">Create User</span>
+                                    <span class="menu-text">Create Admin</span>
                                 </a>
                             </li>
                         </ul>

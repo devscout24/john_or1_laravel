@@ -6,18 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use App\Models\CompanySetting;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\File;
 
 class SystemController extends Controller
 {
     // systemSettings view
     public function systemSettings()
     {
-        $settings = CompanySetting::firstOrFail();
+        $settings = CompanySetting::firstOrCreate(['id' => 1]);
         return view('backend.layouts.system.settings', compact('settings'));
     }
 
@@ -47,6 +45,10 @@ class SystemController extends Controller
             'social_tw' => 'nullable|string|max:255',
             'social_tt' => 'nullable|string|max:255',
             'social_th' => 'nullable|string|max:255',
+
+            // Feature Toggles
+            'daily_tasks_enabled' => 'nullable|boolean',
+            'referral_system_enabled' => 'nullable|boolean',
 
             // Password
             'current_password' => 'required',
@@ -98,6 +100,10 @@ class SystemController extends Controller
             'twitter'  => $request->social_tw,
             'tiktok'   => $request->social_tt,
             'threads'  => $request->social_th,
+
+            // Feature Toggles
+            'daily_tasks_enabled' => $request->has('daily_tasks_enabled'),
+            'referral_system_enabled' => $request->has('referral_system_enabled'),
         ]);
 
 

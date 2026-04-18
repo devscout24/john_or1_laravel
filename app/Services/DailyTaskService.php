@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CompanySetting;
 use App\Models\CoinTransaction;
 use App\Models\DailyTask;
 use App\Models\User;
@@ -53,6 +54,19 @@ class DailyTaskService
 
     public function listForUser(int $userId): array
     {
+        if (! CompanySetting::dailyTasksEnabled()) {
+            return [
+                'date' => $this->today(),
+                'tasks' => [],
+                'summary' => [
+                    'total' => 0,
+                    'completed' => 0,
+                    'claimed' => 0,
+                    'total_claimable_coins' => 0,
+                ],
+            ];
+        }
+
         $this->ensureDefaultTasks();
 
         $today = $this->today();
@@ -62,6 +76,10 @@ class DailyTaskService
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
+
+        if (! CompanySetting::referralSystemEnabled()) {
+            $tasks = $tasks->where('action_type', '!=', 'invite_friend')->values();
+        }
 
         if ($tasks->isEmpty()) {
             return [
@@ -129,6 +147,14 @@ class DailyTaskService
 
     public function incrementProgress(int $userId, string $actionType, int $amount = 1): void
     {
+        if (! CompanySetting::dailyTasksEnabled()) {
+            return;
+        }
+
+        if ($actionType === 'invite_friend' && ! CompanySetting::referralSystemEnabled()) {
+            return;
+        }
+
         $amount = max(1, $amount);
 
         $tasks = DailyTask::query()
@@ -169,6 +195,15 @@ class DailyTaskService
 
     public function claim(User $user, int $taskId): array
     {
+        if (! CompanySetting::dailyTasksEnabled()) {
+            return [
+                'ok' => false,
+                'code' => 403,
+                'message' => 'Daily tasks are currently disabled by admin',
+                'data' => [],
+            ];
+        }
+
         $this->ensureDefaultTasks();
 
         $today = $this->today();
@@ -185,6 +220,15 @@ class DailyTaskService
                     'ok' => false,
                     'code' => 404,
                     'message' => 'Daily task not found',
+                    'data' => [],
+                ];
+            }
+
+            if ($task->action_type === 'invite_friend' && ! CompanySetting::referralSystemEnabled()) {
+                return [
+                    'ok' => false,
+                    'code' => 403,
+                    'message' => 'Referral friend system is currently disabled by admin',
                     'data' => [],
                 ];
             }

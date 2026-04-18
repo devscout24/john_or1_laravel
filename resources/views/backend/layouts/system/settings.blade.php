@@ -242,6 +242,51 @@
                             </div>
 
 
+                            <!-- Feature Controls -->
+                            <h5
+                                class="mb-3 mt-4 text-uppercase bg-light-subtle p-1 border-dashed border rounded border-light d-flex justify-content-center align-items-center gap-1">
+                                <i class="ti ti-adjustments fs-lg"></i>
+                                Feature Controls
+                            </h5>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="d-flex justify-content-between align-items-start gap-3">
+                                            <div>
+                                                <h6 class="mb-1">Daily Tasks</h6>
+                                                <p class="text-muted mb-0">Enable or disable the daily tasks module for the
+                                                    app users.</p>
+                                            </div>
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox"
+                                                    name="daily_tasks_enabled" id="dailyTasksEnabled" value="1"
+                                                    {{ old('daily_tasks_enabled', $settings->daily_tasks_enabled ?? true) ? 'checked' : '' }}>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="d-flex justify-content-between align-items-start gap-3">
+                                            <div>
+                                                <h6 class="mb-1">Referral Friend System</h6>
+                                                <p class="text-muted mb-0">Enable or disable referral code usage and
+                                                    referral rewards.</p>
+                                            </div>
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox"
+                                                    name="referral_system_enabled" id="referralSystemEnabled"
+                                                    value="1"
+                                                    {{ old('referral_system_enabled', $settings->referral_system_enabled ?? true) ? 'checked' : '' }}>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
                             <!-- Password -->
                             <div class="mt-3 mb-3">
                                 <label class="form-label">

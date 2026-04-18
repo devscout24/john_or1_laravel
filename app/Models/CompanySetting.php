@@ -28,5 +28,35 @@ class CompanySetting extends Model
         'twitter',
         'tiktok',
         'threads',
+
+        // Feature Toggles
+        'daily_tasks_enabled',
+        'referral_system_enabled',
     ];
+
+    protected $casts = [
+        'daily_tasks_enabled' => 'boolean',
+        'referral_system_enabled' => 'boolean',
+    ];
+
+    public static function current(): self
+    {
+        return static::query()->firstOrCreate(
+            ['id' => 1],
+            [
+                'daily_tasks_enabled' => true,
+                'referral_system_enabled' => true,
+            ]
+        );
+    }
+
+    public static function dailyTasksEnabled(): bool
+    {
+        return (bool) static::current()->daily_tasks_enabled;
+    }
+
+    public static function referralSystemEnabled(): bool
+    {
+        return (bool) static::current()->referral_system_enabled;
+    }
 }

@@ -19,4 +19,14 @@ class UserReferralUsage extends Model
     protected $casts = [
         'used_on' => 'date',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function referrer()
+    {
+        return $this->belongsTo(User::class, 'referrer_user_id');
+    }
 }

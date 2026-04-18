@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompanySetting;
 use App\Models\CoinTransaction;
 use App\Models\DailyTask;
 use App\Models\Favorite;
@@ -81,7 +82,7 @@ class ProfileController extends Controller
             'watched_series_count' => (int) $watchedSeriesCount,
             'referral_code' => $user->referral_code,
             'referral_eligible_until' => $this->referralEligibleUntil($user)->toIso8601String(),
-            'can_use_referral_code' => $this->canUseReferralCode($user),
+            'can_use_referral_code' => CompanySetting::referralSystemEnabled() && $this->canUseReferralCode($user),
         ];
 
         return $this->success($profile_data, 'Profile Information', 200);
@@ -157,6 +158,10 @@ class ProfileController extends Controller
 
     public function applyReferralCode(Request $request, DailyTaskService $dailyTaskService)
     {
+        if (! CompanySetting::referralSystemEnabled()) {
+            return $this->error([], 'Referral friend system is currently disabled by admin', 403);
+        }
+
         $user = $this->authenticatedUser();
 
         if (! $user) {
@@ -256,7 +261,9 @@ class ProfileController extends Controller
                 'reference_id' => $invitee->id,
             ]);
 
-            $dailyTaskService->incrementProgress((int) $invitee->id, 'invite_friend', 1);
+            if (CompanySetting::dailyTasksEnabled()) {
+                $dailyTaskService->incrementProgress((int) $invitee->id, 'invite_friend', 1);
+            }
 
             $dailyTaskRewardCoins = 0;
             $dailyTaskClaimed = false;
@@ -268,7 +275,7 @@ class ProfileController extends Controller
                 ->orderBy('id')
                 ->first();
 
-            if ($inviteTask) {
+            if ($inviteTask && CompanySetting::dailyTasksEnabled()) {
                 $claimResult = $dailyTaskService->claim($invitee, (int) $inviteTask->id);
 
                 if (($claimResult['ok'] ?? false) === true) {

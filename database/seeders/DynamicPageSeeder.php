@@ -15,11 +15,11 @@ class DynamicPageSeeder extends Seeder
     {
         // ADD Multiple Dynamic Pages
         $dynamicPages = [
-            [
-                'page_name' => 'About Us',
-                'content' => 'This is the About Us page content.',
-                'is_active' => true,
-            ],
+            // [
+            //     'page_name' => 'About Us',
+            //     'content' => 'This is the About Us page content.',
+            //     'is_active' => true,
+            // ],
             [
                 'page_name' => 'Privacy Policy',
                 'content' => 'This is the Privacy Policy page content.',

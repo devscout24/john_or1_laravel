@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompanySetting;
 use App\Models\User;
 use App\Services\DailyTaskService;
 use App\Traits\ApiResponse;
@@ -23,6 +24,10 @@ class DailyTaskController extends Controller
 
     public function index(DailyTaskService $dailyTaskService)
     {
+        if (! CompanySetting::dailyTasksEnabled()) {
+            return $this->error([], 'Daily tasks are currently disabled by admin', 403);
+        }
+
         $user = $this->authenticatedUser();
 
         if (! $user) {
@@ -36,6 +41,10 @@ class DailyTaskController extends Controller
 
     public function claim(DailyTaskService $dailyTaskService, int $taskId)
     {
+        if (! CompanySetting::dailyTasksEnabled()) {
+            return $this->error([], 'Daily tasks are currently disabled by admin', 403);
+        }
+
         $user = $this->authenticatedUser();
 
         if (! $user) {
@@ -53,6 +62,10 @@ class DailyTaskController extends Controller
 
     public function progress(Request $request, DailyTaskService $dailyTaskService)
     {
+        if (! CompanySetting::dailyTasksEnabled()) {
+            return $this->error([], 'Daily tasks are currently disabled by admin', 403);
+        }
+
         $user = $this->authenticatedUser();
 
         if (! $user) {

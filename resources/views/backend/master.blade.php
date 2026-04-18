@@ -54,6 +54,38 @@
         .dropify-preview img {
             background: transparent !important;
         }
+
+        .sidenav-menu .side-nav-item.active>.side-nav-link {
+            background: #ff3b5c !important;
+            color: #ffffff !important;
+        }
+
+        .sidenav-menu .side-nav-item.active>.side-nav-link .menu-icon,
+        .sidenav-menu .side-nav-item.active>.side-nav-link .menu-arrow {
+            color: #ffffff !important;
+        }
+
+        .sidenav-menu .side-nav-link:hover,
+        .sidenav-menu .side-nav-link:focus {
+            background: transparent !important;
+            color: #ff3b5c !important;
+        }
+
+        .sidenav-menu .side-nav-link:hover .menu-icon,
+        .sidenav-menu .side-nav-link:focus .menu-icon,
+        .sidenav-menu .side-nav-link:hover .menu-arrow,
+        .sidenav-menu .side-nav-link:focus .menu-arrow {
+            color: #ff3b5c !important;
+        }
+
+        .sidenav-menu .sub-menu .side-nav-link {
+            background: transparent !important;
+        }
+
+        .sidenav-menu .dropdown-menu {
+            background: #fff !important;
+            color: #1f2937 !important;
+        }
     </style>
 
     @stack('styles')

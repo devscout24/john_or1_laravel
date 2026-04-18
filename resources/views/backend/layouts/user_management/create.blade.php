@@ -1,26 +1,9 @@
 @extends('backend.master')
 
-@section('page_title', 'Create User')
+@section('page_title', 'Create Admin')
 
 @section('content')
-
-    <div class="row">
-        <div class="col-12">
-
-            <article class="card overflow-hidden mb-0">
-
-                <div class="position-relative card-side-img overflow-hidden"
-                    style="min-height:300px;
-    background-image:url({{ asset('backend/assets/images/profile-bg.jpg') }})">
-                </div>
-
-            </article>
-
-        </div>
-    </div>
-
-
-    <div class="px-3 mt-n5">
+    <div class="px-3 pt-2">
         <div class="row">
             <div class="col-12">
 
@@ -36,8 +19,23 @@
 
                             <h5 class="mb-4 text-uppercase bg-light-subtle p-2 border rounded text-center">
                                 <i class="ti ti-user-plus fs-lg"></i>
-                                Create New User
+                                Create New Admin
                             </h5>
+
+                            <div class="alert alert-danger" role="alert">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="ti ti-alert-triangle me-1"></i>
+                                    Alert
+                                </h6>
+                                <p class="mb-2">
+                                    If you create a new admin, this user will get whole access over the admin panel and can
+                                    control the admin panel.
+                                </p>
+                                <p class="mb-0">
+                                    Please make sure you provide correct information. Are you sure you want to create a new
+                                    admin?
+                                </p>
+                            </div>
 
 
                             {{-- Name --}}
@@ -73,90 +71,18 @@
                                 <input type="text" name="phone" class="form-control" value="{{ old('phone') }}">
                             </div>
 
-
-                            {{-- Address --}}
+                            {{-- Password --}}
                             <div class="mb-3">
-                                <label class="form-label">Address</label>
+                                <label class="form-label">Password *</label>
 
-                                <textarea name="address" class="form-control" rows="2">{{ old('address') }}</textarea>
+                                <input type="password" name="password" class="form-control" required>
                             </div>
 
-
-                            {{-- Location --}}
+                            {{-- Confirm Password --}}
                             <div class="mb-3">
-                                <label class="form-label">Location</label>
+                                <label class="form-label">Confirm Password *</label>
 
-                                <input type="text" name="location" class="form-control" value="{{ old('location') }}">
-                            </div>
-
-
-                            {{-- Title --}}
-                            <div class="mb-3">
-                                <label class="form-label">Title / Designation</label>
-
-                                <input type="text" name="title" class="form-control" value="{{ old('title') }}">
-                            </div>
-
-
-                            {{-- Role --}}
-                            <div class="mb-3">
-                                <label class="form-label">User Role *</label>
-
-                                <select name="role" class="form-select" required>
-
-                                    <option value="">Select Role</option>
-
-                                    @foreach ($roles as $role)
-                                        <option value="{{ $role->name }}">
-                                            {{ ucfirst($role->name) }}
-                                        </option>
-                                    @endforeach
-
-                                </select>
-                            </div>
-
-
-                            {{-- Status --}}
-                            <div class="mb-3">
-                                <label class="form-label">Status</label>
-
-                                <select name="status" class="form-select">
-
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="banned">Banned</option>
-
-                                </select>
-                            </div>
-
-
-                            {{-- Provider Section --}}
-                            <div id="provider_section" style="display:none;">
-
-                                <hr>
-
-                                <h6 class="mb-3">Provider Settings</h6>
-
-
-                                <div class="mb-3">
-                                    <label class="form-label">Approval Status</label>
-
-                                    <select name="provider_status" class="form-select">
-
-                                        <option value="pending">Pending</option>
-                                        <option value="approved">Approved</option>
-                                        <option value="rejected">Rejected</option>
-
-                                    </select>
-                                </div>
-
-
-                                <div class="mb-3">
-                                    <label class="form-label">Rejection Reason</label>
-
-                                    <textarea name="reason" class="form-control"></textarea>
-                                </div>
-
+                                <input type="password" name="password_confirmation" class="form-control" required>
                             </div>
 
 
@@ -167,20 +93,27 @@
                                 <input type="file" name="avatar" class="form-control" accept="image/*">
                             </div>
 
+                            <hr>
 
-                            {{-- Password --}}
-                            <div class="mb-3">
-                                <label class="form-label">Password *</label>
+                            <p class="text-muted mb-2">
+                                To create this user for security purpose we need your password.
+                            </p>
 
-                                <input type="password" name="password" class="form-control" required>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" value="1" id="admin_access_ack"
+                                    name="admin_access_ack" {{ old('admin_access_ack') ? 'checked' : '' }} required>
+                                <label class="form-check-label fw-semibold" for="admin_access_ack">
+                                    Yes, I am sure to create a new admin with full admin panel access.
+                                </label>
                             </div>
 
-
-                            {{-- Confirm --}}
+                            {{-- Creator Password --}}
                             <div class="mb-3">
-                                <label class="form-label">Confirm Password *</label>
+                                <label class="form-label">Your Password *</label>
 
-                                <input type="password" name="password_confirmation" class="form-control" required>
+                                <input type="password" name="current_admin_password" id="current_admin_password"
+                                    class="form-control" required autocomplete="current-password"
+                                    placeholder="Enter your current password">
                             </div>
 
 
@@ -188,7 +121,7 @@
                             <div class="text-end mt-4">
 
                                 <button type="submit" class="btn btn-success px-4">
-                                    Create User
+                                    Create Admin
                                 </button>
 
                             </div>
@@ -212,16 +145,18 @@
     <script>
         $(document).ready(function() {
 
-            $('select[name="role"]').on('change', function() {
-
-                let role = $(this).val();
-
-                if (role === 'provider') {
-                    $('#provider_section').slideDown();
-                } else {
-                    $('#provider_section').slideUp();
+            $('form').on('submit', function(e) {
+                if (!$('#current_admin_password').val()) {
+                    e.preventDefault();
+                    alert('Your password is required to create this admin.');
+                    return;
                 }
 
+                if (!$('#admin_access_ack').is(':checked')) {
+                    e.preventDefault();
+                    alert('Please confirm that you are sure to create a new admin with full access.');
+                    return;
+                }
             });
 
         });
