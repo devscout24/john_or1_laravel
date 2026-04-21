@@ -14,6 +14,7 @@ use App\Models\Section;
 use App\Models\Subscription;
 use App\Models\WatchHistory;
 use App\Services\DailyTaskService;
+use App\Services\WatchDramaRewardService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -196,6 +197,7 @@ class DiscoverController extends Controller
                 'categories:id,name,slug,icon',
                 'episodes' => function ($query) {
                     $query->where('is_active', true)
+                        ->withCount('watchHistories')
                         ->orderByRaw('CASE WHEN episode_number IS NULL THEN 1 ELSE 0 END')
                         ->orderBy('episode_number')
                         ->orderBy('id');
@@ -245,6 +247,7 @@ class DiscoverController extends Controller
             $history = $watchHistoryByEpisode->get($episode->id);
             $duration = (int) ($episode->duration ?? 0);
             $progress = (int) ($history->progress ?? 0);
+            $viewsCount = (int) ($episode->watch_histories_count ?? 0);
             $episodeImage = $content->thumbnail ?: 'default.png';
             $episodeCoins = (int) ($episode->coins_required ?? $content->coins_required);
 
@@ -274,6 +277,8 @@ class DiscoverController extends Controller
                 'lock_reason' => $episodeLockReason,
                 'duration_seconds' => $duration,
                 'duration_label' => $this->formatDuration($duration),
+                'views_count' => $viewsCount,
+                'views_label' => $this->formatViewsLabel($viewsCount),
                 'is_locked' => ! $episodeCanWatch,
                 'can_watch' => $episodeCanWatch,
                 'progress_seconds' => $progress,
@@ -480,6 +485,8 @@ class DiscoverController extends Controller
             && $existingHistory
             && (int) $existingHistory->progress >= $duration;
 
+        $previousProgress = (int) ($existingHistory->progress ?? 0);
+
         if ($duration > 0) {
             $progress = min($progress, $duration);
         }
@@ -500,6 +507,11 @@ class DiscoverController extends Controller
 
         if (! $wasCompleted && $isCompletedNow) {
             app(DailyTaskService::class)->incrementProgress((int) $user->id, 'watch_episode', 1);
+        }
+
+        $watchedDelta = max(0, (int) $watchHistory->progress - $previousProgress);
+        if ($watchedDelta > 0) {
+            app(WatchDramaRewardService::class)->incrementWatchSeconds((int) $user->id, $watchedDelta);
         }
 
         return $this->success([
@@ -688,6 +700,19 @@ class DiscoverController extends Controller
         }
 
         return sprintf('%ds', $remaining);
+    }
+
+    private function formatViewsLabel(int $views): string
+    {
+        if ($views >= 1000000) {
+            return rtrim(rtrim(number_format($views / 1000000, 1), '0'), '.') . 'M views';
+        }
+
+        if ($views >= 1000) {
+            return rtrim(rtrim(number_format($views / 1000, 1), '0'), '.') . 'K views';
+        }
+
+        return $views . ' views';
     }
 
     private function buildMediaUrl(?string $path): ?string

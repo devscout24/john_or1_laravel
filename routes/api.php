@@ -8,7 +8,9 @@ use App\Http\Controllers\API\DiscoverController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\PolicyController;
 use App\Http\Controllers\API\ProfileController;
+use App\Http\Controllers\API\ReelController;
 use App\Http\Controllers\API\SavedSeriesController;
+use App\Http\Controllers\API\WatchDramaRewardController;
 use App\Http\Middleware\JWTMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -85,4 +87,21 @@ Route::controller(DailyTaskController::class)->middleware(JWTMiddleware::class)-
     Route::get('/daily-tasks', 'index');
     Route::post('/daily-tasks/{taskId}/claim', 'claim');
     Route::post('/daily-tasks/progress', 'progress');
+});
+
+Route::controller(WatchDramaRewardController::class)->middleware(JWTMiddleware::class)->group(function () {
+    Route::get('/watch-drama-rewards', 'index');
+    Route::post('/watch-drama-rewards/claim', 'claim');
+});
+
+Route::controller(ReelController::class)->middleware(JWTMiddleware::class)->group(function () {
+    Route::get('/reels', 'index');
+    Route::post('/reels/{episodeId}/like', 'toggleLike');
+    Route::post('/reels/{episodeId}/gift', 'sendGift');
+
+    Route::get('/saved-episodes', 'savedEpisodes');
+    Route::post('/saved-episodes/{episodeId}/add', 'saveEpisode');
+    Route::post('/saved-episodes/{episodeId}/remove', 'unsaveEpisode');
+
+    // Route::get('/admin/reels/gifts', 'adminReceivedGifts');
 });

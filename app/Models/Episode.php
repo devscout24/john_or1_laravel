@@ -35,4 +35,19 @@ class Episode extends Model
     {
         return $this->hasMany(WatchHistory::class);
     }
+
+    public function likes()
+    {
+        return $this->hasMany(EpisodeLike::class);
+    }
+
+    public function gifts()
+    {
+        return $this->hasMany(EpisodeGift::class);
+    }
+
+    public function savedByUsers()
+    {
+        return $this->hasMany(SavedEpisode::class);
+    }
 }
