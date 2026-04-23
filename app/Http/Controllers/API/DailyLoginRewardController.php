@@ -17,6 +17,26 @@ class DailyLoginRewardController extends Controller
 {
     use ApiResponse;
 
+    private function nextResetAt(): Carbon
+    {
+        return now()->addDay()->startOfDay();
+    }
+
+    private function resetCountdownPayload(): array
+    {
+        $resetAt = $this->nextResetAt();
+        $seconds = max(0, now()->diffInSeconds($resetAt, false));
+        $hours = (int) floor($seconds / 3600);
+        $minutes = (int) floor(($seconds % 3600) / 60);
+        $remainingSeconds = (int) ($seconds % 60);
+
+        return [
+            'reset_at' => $resetAt->toIso8601String(),
+            'reset_in_seconds' => $seconds,
+            'reset_in' => sprintf('%02d:%02d:%02d', $hours, $minutes, $remainingSeconds),
+        ];
+    }
+
     private function authenticatedUser(): ?User
     {
         $user = Auth::guard('api')->user();
@@ -95,6 +115,8 @@ class DailyLoginRewardController extends Controller
 
         $claimedToday = $this->claimedToday($state);
         $completedDay = $claimedToday ? (int) ($state->last_claimed_day ?? 0) : ((int) $state->next_day - 1);
+        $totalDays = max(0, (int) $rewards->count());
+        $usedDays = min(max(0, $completedDay), $totalDays);
 
         $days = $rewards->map(function (DailyLoginReward $reward) use ($completedDay, $claimedToday, $state) {
             $day = (int) $reward->day;
@@ -108,13 +130,22 @@ class DailyLoginRewardController extends Controller
         })->values();
 
         $nextReward = $rewards->firstWhere('day', (int) $state->next_day);
+        $countdown = $this->resetCountdownPayload();
 
         return $this->success([
             'days' => $days,
+            'streak' => [
+                'used' => $usedDays,
+                'total' => $totalDays,
+                'label' => sprintf('%d/%d used', $usedDays, $totalDays),
+            ],
             'next_claim_day' => (int) $state->next_day,
             'next_claim_amount' => (int) ($nextReward->coins ?? 0),
             'can_claim_today' => !$claimedToday,
             'claimed_today' => $claimedToday,
+            'reset_at' => $countdown['reset_at'],
+            'reset_in_seconds' => $countdown['reset_in_seconds'],
+            'reset_in' => $countdown['reset_in'],
         ], 'Daily login rewards fetched successfully', 200);
     }
 
@@ -164,14 +195,26 @@ class DailyLoginRewardController extends Controller
             $state->save();
         });
 
-        $nextReward = DailyLoginReward::where('is_active', true)->where('day', (int) $state->next_day)->first();
+        $rewards = DailyLoginReward::where('is_active', true)->orderBy('day')->get();
+        $nextReward = $rewards->firstWhere('day', (int) $state->next_day);
+        $totalDays = max(0, (int) $rewards->count());
+        $usedDays = min(max(0, (int) $claimDay), $totalDays);
+        $countdown = $this->resetCountdownPayload();
 
         return $this->success([
             'claimed_day' => $claimDay,
             'claimed_amount' => (int) $reward->coins,
             'total_coins' => (int) $user->coins,
+            'streak' => [
+                'used' => $usedDays,
+                'total' => $totalDays,
+                'label' => sprintf('%d/%d used', $usedDays, $totalDays),
+            ],
             'next_claim_day' => (int) $state->next_day,
             'next_claim_amount' => (int) ($nextReward->coins ?? 0),
+            'reset_at' => $countdown['reset_at'],
+            'reset_in_seconds' => $countdown['reset_in_seconds'],
+            'reset_in' => $countdown['reset_in'],
         ], 'Daily login reward claimed successfully', 200);
     }
 }

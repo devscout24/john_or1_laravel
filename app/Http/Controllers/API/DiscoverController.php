@@ -26,6 +26,13 @@ class DiscoverController extends Controller
 {
     use ApiResponse;
 
+    private const REQUIRED_EPISODE_ADS = 3;
+
+    private function requiredEpisodeAds(): int
+    {
+        return self::REQUIRED_EPISODE_ADS;
+    }
+
     /**
      * Discover page API payload.
      */
@@ -390,7 +397,8 @@ class DiscoverController extends Controller
     public function unlockWithAd(Request $request, int $episodeId)
     {
         $request->validate([
-            'ads_watched' => ['nullable', 'integer', 'min:1', 'max:10'],
+            // One API call represents one completed ad watch event.
+            'ads_watched' => ['nullable', 'integer', Rule::in([1])],
         ]);
 
         $user = Auth::guard('api')->user();
@@ -410,8 +418,7 @@ class DiscoverController extends Controller
             return $this->error([], 'This episode does not use ad unlock', 422);
         }
 
-        $requiredAds = 1;
-        $watched = (int) ($request->ads_watched ?? 1);
+        $requiredAds = $this->requiredEpisodeAds();
 
         $adSession = EpisodeAdSession::firstOrCreate(
             [
@@ -424,7 +431,29 @@ class DiscoverController extends Controller
             ]
         );
 
-        $adSession->ads_watched = (int) $adSession->ads_watched + $watched;
+        $currentlyUnlocked = $adSession->unlocked_until && Carbon::parse($adSession->unlocked_until)->isFuture();
+
+        if ($currentlyUnlocked) {
+            $access = $this->resolveEpisodeAccessStatus($content, $episode, $user->id);
+
+            return $this->success([
+                'content_id' => $content->id,
+                'episode_id' => $episode->id,
+                'ads_watched' => min((int) $adSession->ads_watched, $requiredAds),
+                'required_ads' => $requiredAds,
+                'remaining_ads' => 0,
+                'unlocked_until' => $adSession->unlocked_until?->toIso8601String(),
+                'access' => $access,
+            ], 'Episode already unlocked with ads');
+        }
+
+        $isExpired = $adSession->unlocked_until && Carbon::parse($adSession->unlocked_until)->isPast();
+        if ($isExpired || (int) $adSession->ads_watched >= $requiredAds) {
+            $adSession->ads_watched = 0;
+            $adSession->unlocked_until = null;
+        }
+
+        $adSession->ads_watched = min($requiredAds, (int) $adSession->ads_watched + 1);
 
         if ($adSession->ads_watched >= $requiredAds) {
             $adSession->unlocked_until = now()->addHours(24);
@@ -439,6 +468,7 @@ class DiscoverController extends Controller
             'episode_id' => $episode->id,
             'ads_watched' => (int) $adSession->ads_watched,
             'required_ads' => $requiredAds,
+            'remaining_ads' => max(0, $requiredAds - (int) $adSession->ads_watched),
             'unlocked_until' => $adSession->unlocked_until?->toIso8601String(),
             'access' => $access,
         ], 'Episode ad unlock updated successfully');
@@ -539,7 +569,7 @@ class DiscoverController extends Controller
             'subscription_active' => false,
             'subscription_ends_at' => null,
             'ads_watched' => 0,
-            'required_ads' => 1,
+            'required_ads' => $this->requiredEpisodeAds(),
             'ad_unlocked_until' => null,
         ];
 
@@ -652,7 +682,10 @@ class DiscoverController extends Controller
                 && Carbon::parse($adSession->unlocked_until)->isFuture()
             );
 
-            $access['ads_watched'] = (int) ($adSession->ads_watched ?? 0);
+            $requiredAds = $this->requiredEpisodeAds();
+
+            $access['required_ads'] = $requiredAds;
+            $access['ads_watched'] = min($requiredAds, (int) ($adSession->ads_watched ?? 0));
             $access['ad_unlocked_until'] = $adSession?->unlocked_until?->toIso8601String();
             $access['can_watch'] = $isUnlocked;
             $access['lock_reason'] = $isUnlocked ? null : 'watch_ads_required';
