@@ -23,6 +23,9 @@ class ProfileController extends Controller
 {
     use ApiResponse;
 
+    private const INVITEE_REFERRAL_BONUS_COINS = 15;
+    private const REFERRER_FALLBACK_BONUS_COINS = 50;
+
     private function authenticatedUser(): ?User
     {
         $user = Auth::guard('api')->user();
@@ -225,18 +228,14 @@ class ProfileController extends Controller
                 ];
             }
 
-            $referralBonusCoins = 15;
-
-            $invitee->coins = (int) $invitee->coins + $referralBonusCoins;
+            $inviteeBonusCoins = self::INVITEE_REFERRAL_BONUS_COINS;
+            $invitee->coins = (int) $invitee->coins + $inviteeBonusCoins;
 
             if (! $invitee->referred_by_user_id) {
                 $invitee->referred_by_user_id = $lockedReferrer->id;
             }
 
             $invitee->save();
-
-            $lockedReferrer->coins = (int) $lockedReferrer->coins + $referralBonusCoins;
-            $lockedReferrer->save();
 
             UserReferralUsage::create([
                 'user_id' => $invitee->id,
@@ -248,25 +247,18 @@ class ProfileController extends Controller
             CoinTransaction::create([
                 'user_id' => $invitee->id,
                 'type' => 'earn',
-                'amount' => $referralBonusCoins,
+                'amount' => $inviteeBonusCoins,
                 'source' => 'referral_bonus_invitee',
                 'reference_id' => $lockedReferrer->id,
             ]);
 
-            CoinTransaction::create([
-                'user_id' => $lockedReferrer->id,
-                'type' => 'earn',
-                'amount' => $referralBonusCoins,
-                'source' => 'referral_bonus_referrer',
-                'reference_id' => $invitee->id,
-            ]);
-
             if (CompanySetting::dailyTasksEnabled()) {
-                $dailyTaskService->incrementProgress((int) $invitee->id, 'invite_friend', 1);
+                $dailyTaskService->incrementProgress((int) $lockedReferrer->id, 'invite_friend', 1);
             }
 
             $dailyTaskRewardCoins = 0;
             $dailyTaskClaimed = false;
+            $referrerBonusCoins = 0;
 
             $inviteTask = DailyTask::query()
                 ->where('is_active', true)
@@ -276,15 +268,31 @@ class ProfileController extends Controller
                 ->first();
 
             if ($inviteTask && CompanySetting::dailyTasksEnabled()) {
-                $claimResult = $dailyTaskService->claim($invitee, (int) $inviteTask->id);
+                $claimResult = $dailyTaskService->claim($lockedReferrer, (int) $inviteTask->id);
 
                 if (($claimResult['ok'] ?? false) === true) {
                     $dailyTaskClaimed = true;
                     $dailyTaskRewardCoins = (int) ($claimResult['data']['claimed_amount'] ?? 0);
+                    $referrerBonusCoins = $dailyTaskRewardCoins;
                 }
             }
 
+            if (! $dailyTaskClaimed) {
+                $referrerBonusCoins = self::REFERRER_FALLBACK_BONUS_COINS;
+                $lockedReferrer->coins = (int) $lockedReferrer->coins + $referrerBonusCoins;
+                $lockedReferrer->save();
+
+                CoinTransaction::create([
+                    'user_id' => $lockedReferrer->id,
+                    'type' => 'earn',
+                    'amount' => $referrerBonusCoins,
+                    'source' => 'referral_bonus_referrer',
+                    'reference_id' => $invitee->id,
+                ]);
+            }
+
             $invitee->refresh();
+            $lockedReferrer->refresh();
 
             return [
                 'ok' => true,
@@ -292,7 +300,9 @@ class ProfileController extends Controller
                 'message' => 'Referral code applied successfully',
                 'data' => [
                     'referral_code' => $referralCode,
-                    'referral_bonus_coins' => $referralBonusCoins,
+                    'referral_bonus_coins' => $inviteeBonusCoins,
+                    'invitee_bonus_coins' => $inviteeBonusCoins,
+                    'referrer_bonus_coins' => (int) $referrerBonusCoins,
                     'daily_task_reward_claimed' => $dailyTaskClaimed,
                     'daily_task_reward_coins' => $dailyTaskRewardCoins,
                     'invitee_total_coins' => (int) $invitee->coins,
