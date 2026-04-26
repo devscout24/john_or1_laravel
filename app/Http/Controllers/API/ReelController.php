@@ -105,7 +105,7 @@ class ReelController extends Controller
                 'episode_title' => $episode->title,
                 'episode_number' => $episode->episode_number,
                 'video_type' => $episode->video_type,
-                'video_url' => $episode->video_url,
+                'video_url' => $episode->video_url == null ? asset($episode->storage_path) : $episode->video_url,
                 'storage_path' => $episode->storage_path,
                 'duration_seconds' => (int) ($episode->duration ?? 0),
                 'content_id' => (int) $content->id,
