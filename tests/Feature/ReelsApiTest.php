@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\CoinTransaction;
 use App\Models\Content;
 use App\Models\Episode;
+use App\Models\EpisodeAdSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -112,5 +113,88 @@ class ReelsApiTest extends TestCase
             ->assertJsonPath('data.total', 1)
             ->assertJsonPath('data.items.0.episode_id', $episode->id)
             ->assertJsonPath('data.items.0.episode_title', 'Unlocked Coin Episode');
+    }
+
+    public function test_reels_include_ad_episode_after_user_unlocks_it(): void
+    {
+        $user = User::factory()->create();
+        $token = auth('api')->login($user);
+
+        $content = Content::create([
+            'title' => 'Ad Unlocked Reel Series',
+            'type' => 'series',
+            'access_type' => 'free',
+            'coins_required' => 0,
+            'is_active' => true,
+        ]);
+
+        $episode = Episode::create([
+            'content_id' => $content->id,
+            'title' => 'Unlocked Ad Episode',
+            'episode_number' => 1,
+            'access_type' => 'ads',
+            'coins_required' => 0,
+            'video_type' => 'external',
+            'video_url' => 'https://example.com/ad-unlocked.m3u8',
+            'is_active' => true,
+        ]);
+
+        EpisodeAdSession::create([
+            'user_id' => $user->id,
+            'episode_id' => $episode->id,
+            'ads_watched' => 3,
+            'unlocked_until' => now()->addHours(24),
+        ]);
+
+        $response = $this
+            ->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/reels');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.episode_id', $episode->id)
+            ->assertJsonPath('data.items.0.episode_title', 'Unlocked Ad Episode');
+    }
+
+    public function test_reels_do_not_include_expired_ad_unlocked_episode(): void
+    {
+        $user = User::factory()->create();
+        $token = auth('api')->login($user);
+
+        $content = Content::create([
+            'title' => 'Expired Ad Reel Series',
+            'type' => 'series',
+            'access_type' => 'free',
+            'coins_required' => 0,
+            'is_active' => true,
+        ]);
+
+        $episode = Episode::create([
+            'content_id' => $content->id,
+            'title' => 'Expired Ad Episode',
+            'episode_number' => 1,
+            'access_type' => 'ads',
+            'coins_required' => 0,
+            'video_type' => 'external',
+            'video_url' => 'https://example.com/ad-expired.m3u8',
+            'is_active' => true,
+        ]);
+
+        EpisodeAdSession::create([
+            'user_id' => $user->id,
+            'episode_id' => $episode->id,
+            'ads_watched' => 3,
+            'unlocked_until' => now()->subMinute(),
+        ]);
+
+        $response = $this
+            ->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/reels');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.total', 0)
+            ->assertJsonMissing(['episode_id' => $episode->id]);
     }
 }
