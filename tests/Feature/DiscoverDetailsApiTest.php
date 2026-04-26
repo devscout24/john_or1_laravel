@@ -84,6 +84,7 @@ class DiscoverDetailsApiTest extends TestCase
             ->assertJsonPath('data.access.access_type', 'coins')
             ->assertJsonPath('data.access.can_watch', true)
             ->assertJsonPath('data.episodes.0.is_locked', false)
+            ->assertJsonPath('data.episodes.0.video_url', 'https://example.com/ep1.m3u8')
             ->assertJsonPath('data.episodes.0.progress_percent', 50);
     }
 
@@ -139,6 +140,51 @@ class DiscoverDetailsApiTest extends TestCase
             ->assertJsonPath('data.access.lock_reason', 'coins_required')
             ->assertJsonPath('data.episodes.0.access_type', 'coins')
             ->assertJsonPath('data.episodes.0.coins_required', 10)
+            ->assertJsonPath('data.episodes.0.video_url', null)
             ->assertJsonPath('data.episodes.0.is_locked', true);
+    }
+
+    public function test_discover_detail_includes_episode_video_url_after_coin_unlock(): void
+    {
+        $user = User::factory()->create(['coins' => 50]);
+        $token = auth('api')->login($user);
+
+        $content = Content::create([
+            'title' => 'Unlocked Episode Video',
+            'type' => 'series',
+            'access_type' => 'free',
+            'coins_required' => 0,
+            'is_active' => true,
+        ]);
+
+        $episode = Episode::create([
+            'content_id' => $content->id,
+            'title' => 'Unlocked Paid Episode',
+            'episode_number' => 1,
+            'access_type' => 'coins',
+            'coins_required' => 10,
+            'duration' => 600,
+            'video_type' => 'external',
+            'video_url' => 'https://example.com/unlocked-paid.m3u8',
+            'is_active' => true,
+        ]);
+
+        CoinTransaction::create([
+            'user_id' => $user->id,
+            'type' => 'spend',
+            'amount' => 10,
+            'source' => 'unlock_episode',
+            'reference_id' => $episode->id,
+        ]);
+
+        $response = $this
+            ->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/discover/' . $content->id);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.episodes.0.is_locked', false)
+            ->assertJsonPath('data.episodes.0.can_watch', true)
+            ->assertJsonPath('data.episodes.0.video_url', 'https://example.com/unlocked-paid.m3u8');
     }
 }
