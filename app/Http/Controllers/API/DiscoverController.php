@@ -221,7 +221,6 @@ class DiscoverController extends Controller
             ->where('content_id', $content->id)
             ->exists();
 
-        $access = $this->resolveAccessStatus($content, $user->id);
         $legacyContentCoinUnlock = $this->hasLegacyContentCoinUnlock($user->id, $content->id);
         $legacyContentAdUnlock = $this->hasLegacyContentAdUnlock($user->id, $content->id);
 
@@ -250,32 +249,36 @@ class DiscoverController extends Controller
             ->get()
             ->keyBy('episode_id');
 
-        $episodes = $content->episodes->map(function (Episode $episode) use ($access, $watchHistoryByEpisode, $content, $legacyContentCoinUnlock, $legacyContentAdUnlock, $unlockedEpisodeIds, $unlockedAdEpisodeIds, $user) {
+        $episodes = $content->episodes->map(function (Episode $episode) use ($watchHistoryByEpisode, $content, $legacyContentCoinUnlock, $legacyContentAdUnlock, $unlockedEpisodeIds, $unlockedAdEpisodeIds, $user) {
             $history = $watchHistoryByEpisode->get($episode->id);
             $duration = (int) ($episode->duration ?? 0);
             $progress = (int) ($history->progress ?? 0);
             $viewsCount = (int) ($episode->watch_histories_count ?? 0);
             $episodeImage = $content->thumbnail ?: 'default.png';
-            $episodeCoins = (int) ($episode->coins_required ?? $content->coins_required);
+            $episodeAccessType = $this->resolveEpisodeAccessType($content, $episode);
+            $episodeCoins = (int) ($episode->coins_required ?? 0);
 
-            if ($content->access_type === 'coins') {
+            $episodeAccess = $this->resolveEpisodeAccessStatus($content, $episode, $user->id);
+
+            if ($episodeAccessType === 'coins') {
                 $episodeUnlocked = $legacyContentCoinUnlock || $unlockedEpisodeIds->has($episode->id);
                 $episodeCanWatch = $episodeUnlocked;
                 $episodeLockReason = $episodeUnlocked ? null : 'coins_required';
-            } elseif ($content->access_type === 'ads') {
+            } elseif ($episodeAccessType === 'ads') {
                 $episodeUnlocked = $legacyContentAdUnlock || $unlockedAdEpisodeIds->has($episode->id);
                 $episodeCanWatch = $episodeUnlocked;
                 $episodeLockReason = $episodeUnlocked ? null : 'watch_ads_required';
             } else {
-                $episodeUnlocked = (bool) ($access['can_watch'] ?? false);
-                $episodeCanWatch = (bool) ($access['can_watch'] ?? false);
-                $episodeLockReason = $access['lock_reason'] ?? null;
+                $episodeUnlocked = (bool) ($episodeAccess['can_watch'] ?? false);
+                $episodeCanWatch = (bool) ($episodeAccess['can_watch'] ?? false);
+                $episodeLockReason = $episodeAccess['lock_reason'] ?? null;
             }
 
             return [
                 'id' => $episode->id,
                 'title' => $episode->title,
                 'episode_number' => $episode->episode_number,
+                'access_type' => $episodeAccessType,
                 'image' => $episodeImage,
                 'image_url' => $this->buildMediaUrl($episodeImage),
                 'coins_required' => $episodeCoins,
@@ -317,7 +320,7 @@ class DiscoverController extends Controller
                     ];
                 })->values(),
             ],
-            'access' => $access,
+            'access' => $this->resolveAccessStatus($content, $user->id),
             'episodes' => $episodes,
         ];
 
@@ -342,7 +345,7 @@ class DiscoverController extends Controller
 
         $content = $episode->content;
 
-        if ($content->access_type !== 'coins') {
+        if ($this->resolveEpisodeAccessType($content, $episode) !== 'coins') {
             return $this->error([], 'This episode does not use coin unlock', 422);
         }
 
@@ -355,7 +358,7 @@ class DiscoverController extends Controller
             ->exists();
 
         if (! $alreadyUnlocked) {
-            $requiredCoins = (int) ($episode->coins_required ?? $content->coins_required);
+            $requiredCoins = (int) ($episode->coins_required ?? 0);
 
             if ($user->coins < $requiredCoins) {
                 return $this->error([
@@ -414,7 +417,7 @@ class DiscoverController extends Controller
 
         $content = $episode->content;
 
-        if ($content->access_type !== 'ads') {
+        if ($this->resolveEpisodeAccessType($content, $episode) !== 'ads') {
             return $this->error([], 'This episode does not use ad unlock', 422);
         }
 
@@ -651,9 +654,28 @@ class DiscoverController extends Controller
 
     private function resolveEpisodeAccessStatus(Content $content, Episode $episode, int $userId): array
     {
-        $access = $this->resolveAccessStatus($content, $userId);
+        $accessType = $this->resolveEpisodeAccessType($content, $episode);
 
-        if ($content->access_type === 'coins') {
+        $access = [
+            'access_type' => $accessType,
+            'can_watch' => false,
+            'lock_reason' => null,
+            'coins_required' => (int) ($episode->coins_required ?? 0),
+            'user_coins' => 0,
+            'coins_unlocked' => false,
+            'subscription_active' => false,
+            'subscription_ends_at' => null,
+            'ads_watched' => 0,
+            'required_ads' => $this->requiredEpisodeAds(),
+            'ad_unlocked_until' => null,
+        ];
+
+        if ($accessType === 'free') {
+            $access['can_watch'] = true;
+            return $access;
+        }
+
+        if ($accessType === 'coins') {
             $episodeUnlock = $this->hasLegacyContentCoinUnlock($userId, $content->id)
                 || CoinTransaction::query()
                 ->where('user_id', $userId)
@@ -662,13 +684,31 @@ class DiscoverController extends Controller
                 ->where('reference_id', $episode->id)
                 ->exists();
 
-            $access['coins_required'] = (int) ($episode->coins_required ?? $content->coins_required);
+            $access['user_coins'] = (int) (Auth::guard('api')->user()->coins ?? 0);
             $access['coins_unlocked'] = $episodeUnlock;
             $access['can_watch'] = $episodeUnlock;
             $access['lock_reason'] = $episodeUnlock ? null : 'coins_required';
+
+            return $access;
         }
 
-        if ($content->access_type === 'ads') {
+        if ($accessType === 'subscription') {
+            $activeSubscription = Subscription::query()
+                ->where('user_id', $userId)
+                ->where('status', 'active')
+                ->where('end_date', '>=', now())
+                ->latest('end_date')
+                ->first();
+
+            $access['subscription_active'] = (bool) $activeSubscription;
+            $access['subscription_ends_at'] = $activeSubscription?->end_date?->toIso8601String();
+            $access['can_watch'] = (bool) $activeSubscription;
+            $access['lock_reason'] = $activeSubscription ? null : 'subscription_required';
+
+            return $access;
+        }
+
+        if ($accessType === 'ads') {
             $adSession = EpisodeAdSession::query()
                 ->where('user_id', $userId)
                 ->where('episode_id', $episode->id)
@@ -689,9 +729,16 @@ class DiscoverController extends Controller
             $access['ad_unlocked_until'] = $adSession?->unlocked_until?->toIso8601String();
             $access['can_watch'] = $isUnlocked;
             $access['lock_reason'] = $isUnlocked ? null : 'watch_ads_required';
+
+            return $access;
         }
 
         return $access;
+    }
+
+    private function resolveEpisodeAccessType(Content $content, Episode $episode): string
+    {
+        return (string) ($episode->access_type ?: $content->access_type);
     }
 
     private function hasLegacyContentCoinUnlock(int $userId, int $contentId): bool

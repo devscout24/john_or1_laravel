@@ -13,6 +13,8 @@ class Episode extends Model
         'content_id',
         'title',
         'episode_number',
+        'access_type',
+        'coins_required',
         'video_type',
         'video_url',
         'storage_path',
@@ -22,6 +24,7 @@ class Episode extends Model
 
     protected $casts = [
         'episode_number' => 'integer',
+        'coins_required' => 'integer',
         'duration' => 'integer',
         'is_active' => 'boolean',
     ];

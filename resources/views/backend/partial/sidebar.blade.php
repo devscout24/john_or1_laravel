@@ -84,27 +84,28 @@
                 <li class="side-nav-item {{ Route::currentRouteNamed('dashboard') ? 'active' : '' }}">
                     <a href="{{ route('dashboard') }}" class="side-nav-link">
                         <span class="menu-icon"><i class="ti ti-dashboard"></i></span>
-                        <span class="menu-text" data-lang="apps-chat">Dashboards</span>
+                        <span class="menu-text" data-lang="apps-chat">Main Dashboard</span>
                     </a>
                 </li>
 
-                <li class="side-nav-item">
-                    <a data-bs-toggle="collapse" href="#dashboards" aria-expanded="false" aria-controls="dashboards"
-                        class="side-nav-link">
-                        <span class="menu-icon"><i class="ti ti-wand"></i></span>
-                        <span class="menu-text" data-lang="dashboards">Demo 01</span>
+                <li
+                    class="side-nav-item {{ Route::currentRouteNamed('series.*') || Route::currentRouteNamed('episodes.*') ? 'active' : '' }}">
+                    <a data-bs-toggle="collapse" href="#seriesManagement" aria-expanded="false"
+                        aria-controls="seriesManagement" class="side-nav-link">
+                        <span class="menu-icon"><i class="ti ti-device-tv-old"></i></span>
+                        <span class="menu-text" data-lang="dashboards">Series Management</span>
                         <span class="menu-arrow"></span>
                     </a>
-                    <div class="collapse" id="dashboards" style="height: 100%;">
+                    <div class="collapse" id="seriesManagement" style="height: 100%;">
                         <ul class="sub-menu">
-                            <li class="side-nav-item active">
-                                <a href="index.html" class="side-nav-link">
-                                    <span class="menu-text">Demo Dropdown 01</span>
+                            <li class="side-nav-item {{ Route::currentRouteNamed('series.index') ? 'active' : '' }}">
+                                <a href="{{ route('series.index') }}" class="side-nav-link">
+                                    <span class="menu-text">Series List</span>
                                 </a>
                             </li>
-                            <li class="side-nav-item active">
-                                <a href="index.html" class="side-nav-link">
-                                    <span class="menu-text">Demo Dropdown 02</span>
+                            <li class="side-nav-item {{ Route::currentRouteNamed('series.create') ? 'active' : '' }}">
+                                <a href="{{ route('series.create') }}" class="side-nav-link">
+                                    <span class="menu-text">Create Series</span>
                                 </a>
                             </li>
                         </ul>

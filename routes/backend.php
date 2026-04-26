@@ -3,6 +3,8 @@
 use App\Http\Controllers\Web\Backend\AdminUserController;
 use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\DynamicPageController;
+use App\Http\Controllers\Web\Backend\EpisodeManagementController;
+use App\Http\Controllers\Web\Backend\SeriesManagementController;
 use App\Http\Controllers\Web\Backend\SystemController;
 use App\Http\Controllers\Web\Backend\UserManagementController;
 use Illuminate\Support\Facades\Route;
@@ -63,4 +65,23 @@ Route::controller(UserManagementController::class)->group(function () {
 
     Route::get('/create-user', 'create')->name('admin.user.create');
     Route::post('/admin/user/store', 'store')->name('admin.user.store');
+});
+
+Route::controller(SeriesManagementController::class)->group(function () {
+    Route::get('/series-management', 'index')->name('series.index');
+    Route::get('/series-management/create', 'create')->name('series.create');
+    Route::post('/series-management', 'store')->name('series.store');
+    Route::get('/series-management/{content}/edit', 'edit')->name('series.edit');
+    Route::put('/series-management/{content}', 'update')->name('series.update');
+    Route::post('/series-management/{content}/status', 'toggleStatus')->name('series.status.toggle');
+    Route::post('/series-management/{content}/delete', 'destroy')->name('series.destroy');
+});
+
+Route::controller(EpisodeManagementController::class)->group(function () {
+    Route::get('/series-management/{content}/episodes/create', 'create')->name('episodes.create');
+    Route::post('/series-management/{content}/episodes', 'store')->name('episodes.store');
+    Route::get('/series-management/{content}/episodes/{episode}/edit', 'edit')->name('episodes.edit');
+    Route::put('/series-management/{content}/episodes/{episode}', 'update')->name('episodes.update');
+    Route::post('/series-management/{content}/episodes/{episode}/status', 'toggleStatus')->name('episodes.status.toggle');
+    Route::post('/series-management/{content}/episodes/{episode}/delete', 'destroy')->name('episodes.destroy');
 });
