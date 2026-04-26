@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>eCommerce Dashboard | Responsive Bootstrap 5 Admin Dashboard Template</title>
+    <title>Admin Dashboard | Template</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description"
         content="Paces is a modern, responsive admin dashboard available on ThemeForest. Ideal for building CRM, CMS, project management tools, and custom web applications with a clean UI, flexible layouts, and rich features." />

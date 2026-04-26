@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Content;
+use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -47,7 +48,7 @@ class SeriesManagementController extends Controller
         $thumbnail = $this->uploadImageToPublic($request->file('thumbnail'), null, 'uploads/content/thumbnail');
         $banner = $this->uploadImageToPublic($request->file('banner'), null, 'uploads/content/banner');
 
-        Content::create([
+        $content = Content::create([
             'title' => $request->title,
             'description' => $request->description,
             'type' => 'series',
@@ -57,6 +58,12 @@ class SeriesManagementController extends Controller
             'coins_required' => 0,
             'is_active' => $request->boolean('is_active', true),
         ]);
+
+        // Auto-add to "new_releases" section
+        $newReleasesSection = Section::where('slug', 'new_releases')->first();
+        if ($newReleasesSection) {
+            $content->sections()->attach($newReleasesSection->id, ['order' => 0]);
+        }
 
         return redirect()
             ->route('series.index')
