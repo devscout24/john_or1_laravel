@@ -187,6 +187,13 @@
                     </a>
                 </li>
 
+                {{-- <li class="side-nav-item {{ Route::currentRouteNamed('episode.stats') ? 'active' : '' }}">
+                    <a href="{{ route('episode.stats') }}" class="side-nav-link">
+                        <span class="menu-icon"><i class="ti ti-bar-chart"></i></span>
+                        <span class="menu-text">Episode Stats</span>
+                    </a>
+                </li> --}}
+
                 <li class="side-nav-item text-danger">
                     <a href="{{ route('logout') }}" class="side-nav-link">
                         <span class="menu-icon text-danger"><i class="ti ti-logout"></i></span>

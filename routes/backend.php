@@ -4,6 +4,7 @@ use App\Http\Controllers\Web\Backend\AdminUserController;
 use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\DynamicPageController;
 use App\Http\Controllers\Web\Backend\EpisodeManagementController;
+use App\Http\Controllers\Web\Backend\EpisodeStatsController;
 use App\Http\Controllers\Web\Backend\SeriesManagementController;
 use App\Http\Controllers\Web\Backend\SystemController;
 use App\Http\Controllers\Web\Backend\UserManagementController;
@@ -85,3 +86,5 @@ Route::controller(EpisodeManagementController::class)->group(function () {
     Route::post('/series-management/{content}/episodes/{episode}/status', 'toggleStatus')->name('episodes.status.toggle');
     Route::post('/series-management/{content}/episodes/{episode}/delete', 'destroy')->name('episodes.destroy');
 });
+
+Route::get('/episode-stats', [EpisodeStatsController::class, 'index'])->name('episode.stats');
