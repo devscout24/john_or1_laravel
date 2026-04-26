@@ -101,4 +101,44 @@ class DiscoverDetailsApiTest extends TestCase
 
         $response->assertStatus(401)->assertJsonPath('status', false);
     }
+
+    public function test_discover_detail_surfaces_episode_coin_requirement_for_free_series(): void
+    {
+        $user = User::factory()->create(['coins' => 5]);
+        $token = auth('api')->login($user);
+
+        $content = Content::create([
+            'title' => 'Episode Locked Series',
+            'type' => 'series',
+            'access_type' => 'free',
+            'coins_required' => 0,
+            'is_active' => true,
+        ]);
+
+        Episode::create([
+            'content_id' => $content->id,
+            'title' => 'Paid Episode',
+            'episode_number' => 1,
+            'access_type' => 'coins',
+            'coins_required' => 10,
+            'duration' => 600,
+            'video_type' => 'external',
+            'video_url' => 'https://example.com/paid.m3u8',
+            'is_active' => true,
+        ]);
+
+        $response = $this
+            ->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/discover/' . $content->id);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.access.scope', 'episode')
+            ->assertJsonPath('data.access.access_type', 'coins')
+            ->assertJsonPath('data.access.coins_required', 10)
+            ->assertJsonPath('data.access.lock_reason', 'coins_required')
+            ->assertJsonPath('data.episodes.0.access_type', 'coins')
+            ->assertJsonPath('data.episodes.0.coins_required', 10)
+            ->assertJsonPath('data.episodes.0.is_locked', true);
+    }
 }

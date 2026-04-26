@@ -256,9 +256,8 @@ class DiscoverController extends Controller
             $viewsCount = (int) ($episode->watch_histories_count ?? 0);
             $episodeImage = $content->thumbnail ?: 'default.png';
             $episodeAccessType = $this->resolveEpisodeAccessType($content, $episode);
-            $episodeCoins = (int) ($episode->coins_required ?? 0);
-
             $episodeAccess = $this->resolveEpisodeAccessStatus($content, $episode, $user->id);
+            $episodeCoins = (int) ($episodeAccess['coins_required'] ?? 0);
 
             if ($episodeAccessType === 'coins') {
                 $episodeUnlocked = $legacyContentCoinUnlock || $unlockedEpisodeIds->has($episode->id);
@@ -320,7 +319,7 @@ class DiscoverController extends Controller
                     ];
                 })->values(),
             ],
-            'access' => $this->resolveAccessStatus($content, $user->id),
+            'access' => $this->resolveDetailAccessStatus($content, $content->episodes, $user->id),
             'episodes' => $episodes,
         ];
 
@@ -652,6 +651,44 @@ class DiscoverController extends Controller
         return $response;
     }
 
+    private function resolveDetailAccessStatus(Content $content, $episodes, int $userId): array
+    {
+        $contentAccess = $this->resolveAccessStatus($content, $userId);
+
+        $lockedEpisodes = collect($episodes)
+            ->filter(function (Episode $episode) use ($content) {
+                return in_array($this->resolveEpisodeAccessType($content, $episode), ['coins', 'ads'], true);
+            })
+            ->values();
+
+        $contentAccess['scope'] = 'content';
+        $contentAccess['has_locked_episodes'] = $lockedEpisodes->isNotEmpty();
+        $contentAccess['locked_episode_count'] = $lockedEpisodes->count();
+        $contentAccess['locked_episode_id'] = null;
+
+        if ($content->access_type !== 'free' || $lockedEpisodes->isEmpty()) {
+            return $contentAccess;
+        }
+
+        $episodeAccesses = $lockedEpisodes
+            ->map(function (Episode $episode) use ($content, $userId) {
+                $access = $this->resolveEpisodeAccessStatus($content, $episode, $userId);
+                $access['episode_id'] = (int) $episode->id;
+
+                return $access;
+            });
+
+        $representativeAccess = $episodeAccesses->firstWhere('can_watch', false)
+            ?? $episodeAccesses->first();
+
+        $representativeAccess['scope'] = 'episode';
+        $representativeAccess['has_locked_episodes'] = true;
+        $representativeAccess['locked_episode_count'] = $lockedEpisodes->count();
+        $representativeAccess['locked_episode_id'] = (int) ($representativeAccess['episode_id'] ?? 0);
+
+        return $representativeAccess;
+    }
+
     private function resolveEpisodeAccessStatus(Content $content, Episode $episode, int $userId): array
     {
         $accessType = $this->resolveEpisodeAccessType($content, $episode);
@@ -660,7 +697,7 @@ class DiscoverController extends Controller
             'access_type' => $accessType,
             'can_watch' => false,
             'lock_reason' => null,
-            'coins_required' => (int) ($episode->coins_required ?? 0),
+            'coins_required' => $this->resolveEpisodeCoinsRequired($content, $episode, $accessType),
             'user_coins' => 0,
             'coins_unlocked' => false,
             'subscription_active' => false,
@@ -739,6 +776,19 @@ class DiscoverController extends Controller
     private function resolveEpisodeAccessType(Content $content, Episode $episode): string
     {
         return (string) ($episode->access_type ?: $content->access_type);
+    }
+
+    private function resolveEpisodeCoinsRequired(Content $content, Episode $episode, string $accessType): int
+    {
+        if ($accessType !== 'coins') {
+            return 0;
+        }
+
+        if ($episode->access_type === 'coins') {
+            return (int) ($episode->coins_required ?? 0);
+        }
+
+        return (int) $content->coins_required;
     }
 
     private function hasLegacyContentCoinUnlock(int $userId, int $contentId): bool

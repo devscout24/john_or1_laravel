@@ -58,8 +58,14 @@ class ReelController extends Controller
 
         $episodes = Episode::query()
             ->where('is_active', true)
+            ->where(function ($query) {
+                $query->where('access_type', 'free')
+                    ->orWhereNull('access_type');
+            })
             ->whereHas('content', function ($query) {
-                $query->where('is_active', true)->where('type', 'series');
+                $query->where('is_active', true)
+                    ->where('type', 'series')
+                    ->whereNotIn('access_type', ['coins', 'ads']);
             })
             ->when(! empty($excludeIds), function ($query) use ($excludeIds) {
                 $query->whereNotIn('id', $excludeIds);
