@@ -62,6 +62,8 @@ class EpisodeManagementController extends Controller
 
         if ($request->video_type === 'uploaded' && $request->hasFile('video_file')) {
             $videoPath = $this->uploadVideoToPublic($request->file('video_file'), null);
+            // Set video_url to asset URL for uploaded files
+            $videoUrl = asset($videoPath);
         }
 
         if ($request->video_type === 'external') {
