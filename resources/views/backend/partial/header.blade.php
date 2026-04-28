@@ -6,20 +6,20 @@
                 <!-- Logo light -->
                 <a href="index.html" class="logo-light">
                     <span class="logo-lg">
-                        <img src="{{ asset('backend') }}/assets/images/logo.png" alt="logo" />
+                        <img src="{{ systemLogo() }}" alt="logo" />
                     </span>
                     <span class="logo-sm">
-                        <img src="{{ asset('backend') }}/assets/images/logo-sm.png" alt="small logo" />
+                        <img src="{{ systemMiniLogo() }}" alt="small logo" />
                     </span>
                 </a>
 
                 <!-- Logo Dark -->
                 <a href="index.html" class="logo-dark">
                     <span class="logo-lg">
-                        <img src="{{ asset('backend') }}/assets/images/logo-black.png" alt="dark logo" />
+                        <img src="{{ systemLogo() }}" alt="dark logo" />
                     </span>
                     <span class="logo-sm">
-                        <img src="{{ asset('backend') }}/assets/images/logo-sm.png" alt="small logo" />
+                        <img src="{{ systemMiniLogo() }}" alt="small logo" />
                     </span>
                 </a>
             </div>
@@ -301,14 +301,15 @@
 
             <div id="user-dropdown-detailed" class="topbar-item nav-user">
                 <div class="dropdown">
-                    <a class="topbar-link dropdown-toggle drop-arrow-none px-2" data-bs-toggle="dropdown"
-                        href="#!" aria-haspopup="false" aria-expanded="false">
-                        <img src="{{ asset(Auth::user()->avatar == 'user.png' ? 'admin.png' : Auth::user()->avatar) }}" width="32"
-                            class="rounded-circle me-lg-2 d-flex" alt="user-image" />
+                    <a class="topbar-link dropdown-toggle drop-arrow-none px-2" data-bs-toggle="dropdown" href="#!"
+                        aria-haspopup="false" aria-expanded="false">
+                        <img src="{{ asset(Auth::user()->avatar == 'user.png' ? 'admin.png' : Auth::user()->avatar) }}"
+                            width="32" class="rounded-circle me-lg-2 d-flex" alt="user-image" />
                         <div class="d-lg-flex align-items-center gap-1 d-none">
                             <span>
                                 <h5 class="my-0 lh-1 pro-username">{{ Auth::user()->name }}</h5>
-                                <span class="fs-xs lh-1 text-capitalize">{{ Auth::user()->getRoleNames()->first(); }}</span>
+                                <span
+                                    class="fs-xs lh-1 text-capitalize">{{ Auth::user()->getRoleNames()->first() }}</span>
                             </span>
                             <i class="ti ti-chevron-down align-middle"></i>
                         </div>

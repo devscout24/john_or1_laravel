@@ -96,30 +96,36 @@
                                     </div>
                                 </div>
 
-                                <!-- Logo -->
-                                <div class="col-md-12 logo-preview-light" id="logoPreviewBox">
-
-                                    <div class="mb-4">
-
-                                        <label class="form-label d-flex align-items-center justify-content-between">
-
-                                            <span>Company Logo</span>
-
-                                            <div class="form-check form-switch m-0">
-                                                <input class="form-check-input" type="checkbox" id="logoBgToggle">
-                                                <label class="form-check-label" for="logoBgToggle">
-                                                    Dark Preview
-                                                </label>
+                                <!-- Branding -->
+                                <div class="col-12">
+                                    <div class="row g-3">
+                                        <div class="col-md-4 logo-preview-light" id="logoPreviewBox">
+                                            <div class="mb-4">
+                                                <label class="form-label">System Logo</label>
+                                                <input type="file" name="system_logo" class="form-control dropify"
+                                                    data-height="150"
+                                                    data-default-file="{{ $systemSettings && $systemSettings->logo ? asset($systemSettings->logo) : '' }}">
                                             </div>
+                                        </div>
 
-                                        </label>
+                                        <div class="col-md-4 logo-preview-light" id="miniLogoPreviewBox">
+                                            <div class="mb-4">
+                                                <label class="form-label">Mobile / Mini Logo</label>
+                                                <input type="file" name="system_minilogo" class="form-control dropify"
+                                                    data-height="150"
+                                                    data-default-file="{{ $systemSettings && $systemSettings->minilogo ? asset($systemSettings->minilogo) : '' }}">
+                                            </div>
+                                        </div>
 
-                                        <input type="file" name="company_logo" class="form-control dropify"
-                                            data-height="150"
-                                            data-default-file="{{ $settings && $settings->logo ? asset($settings->logo) : '' }}">
-
+                                        <div class="col-md-4 logo-preview-light" id="faviconPreviewBox">
+                                            <div class="mb-4">
+                                                <label class="form-label">Favicon</label>
+                                                <input type="file" name="system_favicon" class="form-control dropify"
+                                                    data-height="150"
+                                                    data-default-file="{{ $systemSettings && $systemSettings->favicon ? asset($systemSettings->favicon) : '' }}">
+                                            </div>
+                                        </div>
                                     </div>
-
                                 </div>
 
 

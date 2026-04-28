@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\CompanySetting;
 use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Cache;
 
@@ -43,7 +44,7 @@ if (!function_exists('systemTitle')) {
      */
     function systemTitle()
     {
-        return getSystemSetting('system_title', config('app.name', 'Laravel'));
+        return getSystemSetting('system_title', companyName());
     }
 }
 
@@ -69,15 +70,34 @@ if (!function_exists('systemLogo')) {
     {
         $settings = getSystemSettings();
 
-        if ($settings && $settings->system_logo) {
-            // Check if file exists using public_path (matching your controller logic)
-            if (file_exists(public_path($settings->system_logo))) {
-                return asset($settings->system_logo);
-            }
+        $logo = $settings->logo ?? $settings->system_logo ?? null;
+
+        if ($logo && file_exists(public_path($logo))) {
+            return asset($logo);
         }
 
         // Return default logo
-        return asset('backend/assets/images/default-logo.png');
+        return asset('backend/assets/images/logo-black.png');
+    }
+}
+
+if (!function_exists('systemMiniLogo')) {
+    /**
+     * Get system mini/mobile logo URL
+     *
+     * @return string
+     */
+    function systemMiniLogo()
+    {
+        $settings = getSystemSettings();
+
+        $logo = $settings->minilogo ?? $settings->system_minilogo ?? $settings->logo ?? null;
+
+        if ($logo && file_exists(public_path($logo))) {
+            return asset($logo);
+        }
+
+        return asset('backend/assets/images/logo-sm.png');
     }
 }
 
@@ -91,15 +111,14 @@ if (!function_exists('systemFavicon')) {
     {
         $settings = getSystemSettings();
 
-        if ($settings && $settings->system_favicon) {
-            // Check if file exists using public_path (matching your controller logic)
-            if (file_exists(public_path($settings->system_favicon))) {
-                return asset($settings->system_favicon);
-            }
+        $favicon = $settings->favicon ?? $settings->system_favicon ?? null;
+
+        if ($favicon && file_exists(public_path($favicon))) {
+            return asset($favicon);
         }
 
         // Return default favicon
-        return asset('backend/assets/images/default-favicon.ico');
+        return asset('backend/assets/images/favicon.ico');
     }
 }
 
@@ -111,7 +130,13 @@ if (!function_exists('companyName')) {
      */
     function companyName()
     {
-        return getSystemSetting('company_name', 'Your Company');
+        $company = CompanySetting::current();
+
+        if ($company && filled($company->company_name)) {
+            return $company->company_name;
+        }
+
+        return getSystemSetting('company_name', config('app.name', 'Laravel'));
     }
 }
 

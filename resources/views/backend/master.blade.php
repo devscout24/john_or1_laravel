@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Admin Dashboard | Template</title>
+    <title>{{ systemTitle() }}@hasSection('page_title')
+            | @yield('page_title')
+        @endif
+    </title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description"
         content="Paces is a modern, responsive admin dashboard available on ThemeForest. Ideal for building CRM, CMS, project management tools, and custom web applications with a clean UI, flexible layouts, and rich features." />
@@ -12,7 +15,7 @@
     <meta name="author" content="Coderthemes" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ asset('backend') }}/assets/images/favicon.ico" />
+    <link rel="shortcut icon" href="{{ systemFavicon() }}" />
 
 
     <!-- Vector Maps css -->
@@ -53,6 +56,29 @@
         /* Keep image transparent */
         .dropify-preview img {
             background: transparent !important;
+        }
+
+        .sidenav-menu .logo-lg img,
+        .logo-topbar .logo-lg img,
+        .auth-brand img,
+        .brand-logo img {
+            height: 52px !important;
+            width: auto !important;
+            max-width: 100% !important;
+            object-fit: contain;
+        }
+
+        .sidenav-menu .logo-sm img,
+        .logo-topbar .logo-sm img {
+            height: 34px !important;
+            width: auto !important;
+            max-width: 100% !important;
+            object-fit: contain;
+        }
+
+        .sidenav-menu .logo,
+        .logo-topbar {
+            min-height: 76px;
         }
 
         .sidenav-menu .side-nav-item.active>.side-nav-link {

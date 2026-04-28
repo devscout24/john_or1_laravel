@@ -1,15 +1,14 @@
 <div class="sidenav-menu">
     <!-- Brand Logo -->
-    <a href="{{ route('dashboard') }}" class="logo">
+    <a href="{{ route('dashboard') }}" class="logo" style="margin-top: 10px;">
         <span class="logo logo-light">
-            <span class="logo-lg"><img src="{{ asset('backend') }}/assets/images/logo.png" alt="logo" /></span>
-            <span class="logo-sm"><img src="{{ asset('backend') }}/assets/images/logo-sm.png" alt="small logo" /></span>
+            <span class="logo-lg"><img src="{{ systemLogo() }}" alt="logo" /></span>
+            <span class="logo-sm"><img src="{{ systemMiniLogo() }}" alt="small logo" /></span>
         </span>
 
         <span class="logo logo-dark">
-            <span class="logo-lg"><img src="{{ asset('backend') }}/assets/images/logo-black.png"
-                    alt="dark logo" /></span>
-            <span class="logo-sm"><img src="{{ asset('backend') }}/assets/images/logo-sm.png" alt="small logo" /></span>
+            <span class="logo-lg"><img src="{{ systemLogo() }}" alt="dark logo" /></span>
+            <span class="logo-sm"><img src="{{ systemMiniLogo() }}" alt="small logo" /></span>
         </span>
     </a>
 
@@ -89,7 +88,7 @@
                 </li>
 
                 <li
-                    class="side-nav-item {{ Route::currentRouteNamed('series.*') || Route::currentRouteNamed('episodes.*') ? 'active' : '' }}">
+                    class="side-nav-item {{ Route::currentRouteNamed('series.*') || Route::currentRouteNamed('episodes.*') || Route::currentRouteNamed('episode.stats') ? 'active' : '' }}">
                     <a data-bs-toggle="collapse" href="#seriesManagement" aria-expanded="false"
                         aria-controls="seriesManagement" class="side-nav-link">
                         <span class="menu-icon"><i class="ti ti-device-tv-old"></i></span>
@@ -106,6 +105,11 @@
                             <li class="side-nav-item {{ Route::currentRouteNamed('series.create') ? 'active' : '' }}">
                                 <a href="{{ route('series.create') }}" class="side-nav-link">
                                     <span class="menu-text">Create Series</span>
+                                </a>
+                            </li>
+                            <li class="side-nav-item {{ Route::currentRouteNamed('episode.stats') ? 'active' : '' }}">
+                                <a href="{{ route('episode.stats') }}" class="side-nav-link">
+                                    <span class="menu-text">Episode Stats</span>
                                 </a>
                             </li>
                         </ul>
@@ -186,13 +190,6 @@
                         <span class="menu-text" data-lang="apps-chat">Dynamic Pages</span>
                     </a>
                 </li>
-
-                {{-- <li class="side-nav-item {{ Route::currentRouteNamed('episode.stats') ? 'active' : '' }}">
-                    <a href="{{ route('episode.stats') }}" class="side-nav-link">
-                        <span class="menu-icon"><i class="ti ti-bar-chart"></i></span>
-                        <span class="menu-text">Episode Stats</span>
-                    </a>
-                </li> --}}
 
                 <li class="side-nav-item text-danger">
                     <a href="{{ route('logout') }}" class="side-nav-link">

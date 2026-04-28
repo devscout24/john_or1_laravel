@@ -278,9 +278,6 @@ class DiscoverController extends Controller
                 'title' => $episode->title,
                 'episode_number' => $episode->episode_number,
                 'access_type' => $episodeAccessType,
-                'video_type' => $episode->video_type,
-                'video_url' => $episodeCanWatch ? $this->buildEpisodeVideoUrl($episode) : null,
-                'storage_path' => $episodeCanWatch ? $episode->storage_path : null,
                 'image' => $episodeImage,
                 'image_url' => $this->buildMediaUrl($episodeImage),
                 'coins_required' => $episodeCoins,
@@ -859,18 +856,5 @@ class DiscoverController extends Controller
         }
 
         return asset($path);
-    }
-
-    private function buildEpisodeVideoUrl(Episode $episode): ?string
-    {
-        if ($episode->video_url) {
-            return $episode->video_url;
-        }
-
-        if ($episode->storage_path) {
-            return asset($episode->storage_path);
-        }
-
-        return null;
     }
 }

@@ -11,11 +11,9 @@
     <div style="max-width:600px;margin:auto;background:#ffffff;padding:30px;border-radius:8px;">
 
         {{-- Logo --}}
-        @if ($company->logo)
-            <div style="text-align:center;margin-bottom:20px;">
-                <img src="{{ url($company->logo) }}" alt="Logo" style="max-width:150px;height:auto;">
-            </div>
-        @endif
+        <div style="text-align:center;margin-bottom:20px;">
+            <img src="{{ systemLogo() }}" alt="Logo" style="max-width:150px;height:auto;">
+        </div>
 
 
         <h2 style="text-align:center;color:#333;">

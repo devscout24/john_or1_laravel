@@ -3,10 +3,10 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Reset Password | Sunfix Admin</title>
+    <title>{{ systemTitle() }} | Reset Password</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link rel="shortcut icon" href="{{ asset('backend/assets/images/favicon.ico') }}" />
+    <link rel="shortcut icon" href="{{ systemFavicon() }}" />
     <link href="{{ asset('backend/assets/css/vendors.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('backend/assets/css/app.min.css') }}" rel="stylesheet" />
 </head>

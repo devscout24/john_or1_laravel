@@ -88,3 +88,5 @@ Route::controller(EpisodeManagementController::class)->group(function () {
 });
 
 Route::get('/episode-stats', [EpisodeStatsController::class, 'index'])->name('episode.stats');
+Route::get('/episode-stats-data', [EpisodeStatsController::class, 'data'])->name('episode.stats.data');
+Route::get('/episode-stats/{episode}/gifts', [EpisodeStatsController::class, 'giftsHistory'])->name('episode.stats.gifts');

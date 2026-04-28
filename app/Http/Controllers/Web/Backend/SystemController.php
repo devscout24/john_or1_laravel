@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Web\Backend;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use App\Models\CompanySetting;
+use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
 
@@ -16,7 +18,9 @@ class SystemController extends Controller
     public function systemSettings()
     {
         $settings = CompanySetting::firstOrCreate(['id' => 1]);
-        return view('backend.layouts.system.settings', compact('settings'));
+        $systemSettings = SystemSetting::getCached();
+
+        return view('backend.layouts.system.settings', compact('settings', 'systemSettings'));
     }
 
     // systemSettingsUpdate
@@ -31,8 +35,10 @@ class SystemController extends Controller
             'address' => 'nullable|string',
             'description' => 'nullable|string',
 
-            // Logo
-            'company_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            // Branding
+            'system_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'system_minilogo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'system_favicon' => 'nullable|file|mimes:ico,png,jpg,jpeg,webp|max:2048',
 
             // App Links
             'downloadLinkPlay' => 'nullable|url',
@@ -67,12 +73,37 @@ class SystemController extends Controller
 
         // 3. Get Settings (Single Row)
         $settings = CompanySetting::firstOrCreate(['id' => 1]);
+        $systemSettings = SystemSetting::getCached();
 
 
-        // 4. Handle Logo Upload
-        if ($request->hasFile('company_logo')) {
-            $oldImage = $settings->logo != 'logo.png' ? $settings->logo : null;
-            $logo = $this->uploadImage($request->file('company_logo'), $oldImage, 'uploads/company/', 150, 150, 'logo-' . time());
+        // 4. Handle Branding Uploads
+        $logo = $systemSettings->logo;
+        if ($request->hasFile('system_logo')) {
+            $oldImage = $systemSettings->logo && $systemSettings->logo !== 'uploads/systems/logo/logo.png'
+                ? $systemSettings->logo
+                : null;
+            $logo = $this->uploadImage($request->file('system_logo'), $oldImage, 'uploads/systems/logo', 260, 90, 'logo');
+        }
+
+        $minilogo = $systemSettings->minilogo;
+        if ($request->hasFile('system_minilogo')) {
+            $oldMiniLogo = $systemSettings->minilogo && $systemSettings->minilogo !== 'uploads/systems/logo/minilogo.png'
+                ? $systemSettings->minilogo
+                : null;
+            $minilogo = $this->uploadImage($request->file('system_minilogo'), $oldMiniLogo, 'uploads/systems/logo', 120, 120, 'minilogo');
+        }
+
+        $favicon = $systemSettings->favicon;
+        if ($request->hasFile('system_favicon')) {
+            $oldFavicon = $systemSettings->favicon && $systemSettings->favicon !== 'uploads/systems/favicon/favico.png'
+                ? $systemSettings->favicon
+                : null;
+
+            if ($oldFavicon && File::exists(public_path($oldFavicon))) {
+                File::delete(public_path($oldFavicon));
+            }
+
+            $favicon = self::fileUpload($request->file('system_favicon'), 'systems/favicon');
         }
 
 
@@ -105,6 +136,14 @@ class SystemController extends Controller
             'daily_tasks_enabled' => $request->has('daily_tasks_enabled'),
             'referral_system_enabled' => $request->has('referral_system_enabled'),
         ]);
+
+        $systemSettings->update([
+            'logo' => $logo,
+            'minilogo' => $minilogo,
+            'favicon' => $favicon,
+        ]);
+
+        SystemSetting::clearCache();
 
 
         // 6. Redirect with Success

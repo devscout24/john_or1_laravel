@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\AdSession;
 use App\Models\CoinTransaction;
 use App\Models\Episode;
-use App\Models\EpisodeAdSession;
 use App\Models\EpisodeGift;
 use App\Models\EpisodeLike;
 use App\Models\SavedEpisode;
@@ -57,86 +55,11 @@ class ReelController extends Controller
 
         $limit = (int) ($validated['limit'] ?? 12);
         $excludeIds = collect($validated['exclude_episode_ids'] ?? [])->map(fn($id) => (int) $id)->all();
-        $unlockedEpisodeIds = CoinTransaction::query()
-            ->where('user_id', $user->id)
-            ->where('type', 'spend')
-            ->where('source', 'unlock_episode')
-            ->pluck('reference_id')
-            ->map(fn($id) => (int) $id)
-            ->all();
-
-        $unlockedContentIds = CoinTransaction::query()
-            ->where('user_id', $user->id)
-            ->where('type', 'spend')
-            ->where('source', 'unlock_content')
-            ->pluck('reference_id')
-            ->map(fn($id) => (int) $id)
-            ->all();
-
-        $adUnlockedEpisodeIds = EpisodeAdSession::query()
-            ->where('user_id', $user->id)
-            ->whereNotNull('unlocked_until')
-            ->where('unlocked_until', '>', now())
-            ->pluck('episode_id')
-            ->map(fn($id) => (int) $id)
-            ->all();
-
-        $adUnlockedContentIds = AdSession::query()
-            ->where('user_id', $user->id)
-            ->whereNotNull('unlocked_until')
-            ->where('unlocked_until', '>', now())
-            ->pluck('content_id')
-            ->map(fn($id) => (int) $id)
-            ->all();
 
         $episodes = Episode::query()
             ->where('is_active', true)
-            ->where(function ($query) use ($unlockedEpisodeIds, $unlockedContentIds, $adUnlockedEpisodeIds, $adUnlockedContentIds) {
-                $query->where(function ($query) {
-                    $query->where(function ($query) {
-                        $query->where('access_type', 'free')
-                            ->orWhereNull('access_type');
-                    })
-                        ->whereHas('content', function ($query) {
-                            $query->whereNotIn('access_type', ['coins', 'ads']);
-                        });
-                });
-
-                if (! empty($unlockedEpisodeIds)) {
-                    $query->orWhere(function ($query) use ($unlockedEpisodeIds) {
-                        $query->where('access_type', 'coins')
-                            ->whereIn('id', $unlockedEpisodeIds);
-                    });
-                }
-
-                if (! empty($unlockedContentIds)) {
-                    $query->orWhere(function ($query) use ($unlockedContentIds) {
-                        $query->whereHas('content', function ($query) use ($unlockedContentIds) {
-                            $query->where('access_type', 'coins')
-                            ->whereIn('id', $unlockedContentIds);
-                        });
-                    });
-                }
-
-                if (! empty($adUnlockedEpisodeIds)) {
-                    $query->orWhere(function ($query) use ($adUnlockedEpisodeIds) {
-                        $query->where('access_type', 'ads')
-                            ->whereIn('id', $adUnlockedEpisodeIds);
-                    });
-                }
-
-                if (! empty($adUnlockedContentIds)) {
-                    $query->orWhere(function ($query) use ($adUnlockedContentIds) {
-                        $query->whereHas('content', function ($query) use ($adUnlockedContentIds) {
-                            $query->where('access_type', 'ads')
-                                ->whereIn('id', $adUnlockedContentIds);
-                        });
-                    });
-                }
-            })
             ->whereHas('content', function ($query) {
-                $query->where('is_active', true)
-                    ->where('type', 'series');
+                $query->where('is_active', true)->where('type', 'series');
             })
             ->when(! empty($excludeIds), function ($query) use ($excludeIds) {
                 $query->whereNotIn('id', $excludeIds);

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Password Reset</title>
+    <title>{{ systemTitle() }} | Password Reset</title>
 </head>
 
 <body style="font-family: Arial, sans-serif; background:#f4f6f9; padding:30px">
