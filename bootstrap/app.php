@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\JWTMiddleware;
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\CheckScreenLocked;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -15,14 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__ . '/../routes/channels.php',
         health: '/up',
         then: function () {
-            Route::middleware(['web', 'auth'])
+            Route::middleware(['web', 'auth', 'screen.locked'])
                 ->group(base_path('routes/backend.php'));
-
         }
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'jwt.verify' => JWTMiddleware::class,
+            'screen.locked' => CheckScreenLocked::class,
         ]);
     })
     ->withBroadcasting(

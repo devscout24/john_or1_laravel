@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\DynamicPageController;
 use App\Http\Controllers\Web\Backend\EpisodeManagementController;
 use App\Http\Controllers\Web\Backend\EpisodeStatsController;
+use App\Http\Controllers\Web\Backend\LockController;
 use App\Http\Controllers\Web\Backend\SeriesManagementController;
 use App\Http\Controllers\Web\Backend\SystemController;
 use App\Http\Controllers\Web\Backend\UserManagementController;
@@ -19,6 +20,13 @@ Route::get('/clear-cache', function () {
     Artisan::call('view:clear');
     return redirect()->back()->with('success', 'Cache cleared successfully.');
 })->name('cache.clear');
+
+// Lock Screen
+Route::controller(LockController::class)->group(function () {
+    Route::get('/screen/lock', 'showLockScreen')->name('screen.lock.show');
+    Route::post('/screen/lock', 'lock')->name('screen.lock');
+    Route::post('/screen/unlock', 'unlock')->name('screen.lock.unlock');
+});
 
 
 // Dashboard

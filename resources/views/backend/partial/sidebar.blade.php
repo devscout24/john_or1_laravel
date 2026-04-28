@@ -60,7 +60,7 @@
                         </a>
 
                         <!-- Lock -->
-                        <a href="auth-lock-screen.html" class="dropdown-item">
+                        <a href="{{ route('screen.lock.show') }}" class="dropdown-item">
                             <i class="ti ti-lock me-1 fs-lg align-middle"></i>
                             <span class="align-middle">Lock Screen</span>
                         </a>
