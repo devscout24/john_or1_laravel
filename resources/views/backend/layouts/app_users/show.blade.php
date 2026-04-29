@@ -23,7 +23,7 @@
                     <p class="text-muted mb-3">{{ $user->email }}</p>
 
                     <div class="d-flex justify-content-center gap-2 mb-3">
-                        @if($user->status === 'active')
+                        @if ($user->status === 'active')
                             <span class="badge bg-success-subtle text-success">Active</span>
                         @elseif($user->status === 'banned')
                             <span class="badge bg-danger-subtle text-danger">Blocked</span>
@@ -31,7 +31,7 @@
                             <span class="badge bg-warning-subtle text-warning">Inactive</span>
                         @endif
 
-                        @if($user->provider === 'guest')
+                        @if ($user->provider === 'guest')
                             <span class="badge bg-info-subtle text-info">Guest</span>
                         @else
                             <span class="badge bg-success-subtle text-success">{{ ucfirst($user->provider) }}</span>
@@ -50,7 +50,7 @@
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <span class="text-muted">Last Login:</span>
                             <span class="fw-semibold">
-                                @if($user->last_login_at)
+                                @if ($user->last_login_at)
                                     {{ $user->last_login_at->diffForHumans() }}
                                 @else
                                     Never
@@ -60,17 +60,15 @@
                     </div>
 
                     <div class="mt-3">
-                        @if($user->status === 'banned')
+                        @if ($user->status === 'banned')
                             <button type="button" class="btn btn-sm btn-success w-100 js-user-unblock"
-                                data-url="{{ route('app-user.status.update', $user->id) }}"
-                                data-status="active"
+                                data-url="{{ route('app-user.status.update', $user->id) }}" data-status="active"
                                 data-user-name="{{ $user->name }}">
                                 <i class="ti ti-user-check me-1"></i>Unblock User
                             </button>
                         @else
                             <button type="button" class="btn btn-sm btn-danger w-100 js-user-block"
-                                data-url="{{ route('app-user.status.update', $user->id) }}"
-                                data-status="banned"
+                                data-url="{{ route('app-user.status.update', $user->id) }}" data-status="banned"
                                 data-user-name="{{ $user->name }}">
                                 <i class="ti ti-user-x me-1"></i>Block User
                             </button>
@@ -92,7 +90,8 @@
                                     <h6 class="text-muted mb-1">Total Coins</h6>
                                     <h3 class="mb-0">{{ $coins }}</h3>
                                 </div>
-                                <div class="avatar-sm bg-warning-subtle rounded d-flex align-items-center justify-content-center">
+                                <div
+                                    class="avatar-sm bg-warning-subtle rounded d-flex align-items-center justify-content-center">
                                     <i class="ti ti-coin fs-24 text-warning"></i>
                                 </div>
                             </div>
@@ -107,18 +106,20 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="text-muted mb-1">Subscription</h6>
-                                    @if($subscription)
+                                    @if ($subscription)
                                         <h5 class="mb-0">
                                             <span class="badge bg-success-subtle text-success">Active</span>
                                         </h5>
-                                        <small class="text-muted">Expires: {{ $subscription->expires_at->format('d M Y') }}</small>
+                                        <small class="text-muted">Expires:
+                                            {{ $subscription->expires_at->format('d M Y') }}</small>
                                     @else
                                         <h5 class="mb-0">
                                             <span class="badge bg-warning-subtle text-warning">Inactive</span>
                                         </h5>
                                     @endif
                                 </div>
-                                <div class="avatar-sm bg-success-subtle rounded d-flex align-items-center justify-content-center">
+                                <div
+                                    class="avatar-sm bg-success-subtle rounded d-flex align-items-center justify-content-center">
                                     <i class="ti ti-crown fs-24 text-success"></i>
                                 </div>
                             </div>
@@ -136,7 +137,8 @@
                                     <h3 class="mb-0">{{ $referrals }}</h3>
                                     <small class="text-muted">People invited</small>
                                 </div>
-                                <div class="avatar-sm bg-info-subtle rounded d-flex align-items-center justify-content-center">
+                                <div
+                                    class="avatar-sm bg-info-subtle rounded d-flex align-items-center justify-content-center">
                                     <i class="ti ti-users fs-24 text-info"></i>
                                 </div>
                             </div>
@@ -153,7 +155,8 @@
                                     <h6 class="text-muted mb-1">Series Watched</h6>
                                     <h3 class="mb-0">{{ $seriesWatched }}</h3>
                                 </div>
-                                <div class="avatar-sm bg-primary-subtle rounded d-flex align-items-center justify-content-center">
+                                <div
+                                    class="avatar-sm bg-primary-subtle rounded d-flex align-items-center justify-content-center">
                                     <i class="ti ti-eye fs-24 text-primary"></i>
                                 </div>
                             </div>
@@ -170,7 +173,8 @@
                                     <h6 class="text-muted mb-1">Series Liked</h6>
                                     <h3 class="mb-0">{{ $seriesLiked }}</h3>
                                 </div>
-                                <div class="avatar-sm bg-danger-subtle rounded d-flex align-items-center justify-content-center">
+                                <div
+                                    class="avatar-sm bg-danger-subtle rounded d-flex align-items-center justify-content-center">
                                     <i class="ti ti-heart fs-24 text-danger"></i>
                                 </div>
                             </div>
@@ -187,7 +191,8 @@
                                     <h6 class="text-muted mb-1">Series Saved</h6>
                                     <h3 class="mb-0">{{ $seriesSaved }}</h3>
                                 </div>
-                                <div class="avatar-sm bg-secondary-subtle rounded d-flex align-items-center justify-content-center">
+                                <div
+                                    class="avatar-sm bg-secondary-subtle rounded d-flex align-items-center justify-content-center">
                                     <i class="ti ti-bookmark fs-24 text-secondary"></i>
                                 </div>
                             </div>
@@ -216,7 +221,7 @@
                         <div class="list-group-item">
                             <span class="text-muted">Email Verified:</span>
                             <p class="mb-0">
-                                @if($user->email_verified_at)
+                                @if ($user->email_verified_at)
                                     <span class="badge bg-success-subtle text-success">Yes</span>
                                 @else
                                     <span class="badge bg-warning-subtle text-warning">No</span>
@@ -230,7 +235,7 @@
                         <div class="list-group-item">
                             <span class="text-muted">Account Status:</span>
                             <p class="mb-0">
-                                @if($user->status === 'active')
+                                @if ($user->status === 'active')
                                     <span class="badge bg-success-subtle text-success">Active</span>
                                 @elseif($user->status === 'banned')
                                     <span class="badge bg-danger-subtle text-danger">Blocked</span>
@@ -248,7 +253,7 @@
         <div class="col-md-8">
             <div class="row">
                 <!-- Recently Watched -->
-                @if($recentWatched->count() > 0)
+                @if ($recentWatched->count() > 0)
                     <div class="col-md-6 col-lg-6">
                         <div class="card">
                             <div class="card-header">
@@ -256,12 +261,13 @@
                             </div>
                             <div class="card-body p-0">
                                 <div class="list-group list-group-flush">
-                                    @foreach($recentWatched as $watch)
+                                    @foreach ($recentWatched as $watch)
                                         <div class="list-group-item px-4 py-3">
                                             <div class="d-flex justify-content-between align-items-start">
                                                 <div>
                                                     <h6 class="mb-1">Episode {{ $watch->episode_id }}</h6>
-                                                    <small class="text-muted">{{ \Carbon\Carbon::parse($watch->created_at)->diffForHumans() }}</small>
+                                                    <small
+                                                        class="text-muted">{{ \Carbon\Carbon::parse($watch->created_at)->diffForHumans() }}</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -273,7 +279,7 @@
                 @endif
 
                 <!-- Recently Liked -->
-                @if($recentLiked->count() > 0)
+                @if ($recentLiked->count() > 0)
                     <div class="col-md-6 col-lg-6">
                         <div class="card">
                             <div class="card-header">
@@ -281,12 +287,13 @@
                             </div>
                             <div class="card-body p-0">
                                 <div class="list-group list-group-flush">
-                                    @foreach($recentLiked as $like)
+                                    @foreach ($recentLiked as $like)
                                         <div class="list-group-item px-4 py-3">
                                             <div class="d-flex justify-content-between align-items-start">
                                                 <div>
                                                     <h6 class="mb-1">Episode {{ $like->episode_id }}</h6>
-                                                    <small class="text-muted">{{ $like->created_at->diffForHumans() }}</small>
+                                                    <small
+                                                        class="text-muted">{{ $like->created_at->diffForHumans() }}</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -339,7 +346,8 @@
                         error: function(xhr) {
                             Swal.fire({
                                 title: 'Error!',
-                                text: xhr.responseJSON?.error || 'Something went wrong',
+                                text: xhr.responseJSON?.error ||
+                                    'Something went wrong',
                                 icon: 'error'
                             });
                         }
@@ -382,7 +390,8 @@
                         error: function(xhr) {
                             Swal.fire({
                                 title: 'Error!',
-                                text: xhr.responseJSON?.error || 'Something went wrong',
+                                text: xhr.responseJSON?.error ||
+                                    'Something went wrong',
                                 icon: 'error'
                             });
                         }

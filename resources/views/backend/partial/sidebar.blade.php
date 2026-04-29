@@ -175,7 +175,8 @@
                                     <span class="menu-text">Mobile App Users</span>
                                 </a>
                             </li>
-                            <li class="side-nav-item {{ Route::currentRouteNamed('admin.user.lists') || Route::currentRouteNamed('admin.user.*') ? 'active' : '' }}">
+                            <li
+                                class="side-nav-item {{ Route::currentRouteNamed('admin.user.lists') || Route::currentRouteNamed('admin.user.*') ? 'active' : '' }}">
                                 <a href="{{ route('admin.user.lists') }}" class="side-nav-link">
                                     <span class="menu-text">Admin Users</span>
                                 </a>

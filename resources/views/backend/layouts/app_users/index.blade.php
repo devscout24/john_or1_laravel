@@ -48,10 +48,10 @@
                             <span class="badge bg-primary-subtle text-primary ms-1">{{ $allUsers->count() }}</span>
                         </button>
 
-                        <button type="button" class="btn btn-sm btn-outline-info user-type-quick"
-                            data-user-type="social">
+                        <button type="button" class="btn btn-sm btn-outline-info user-type-quick" data-user-type="social">
                             Social Users
-                            <span class="badge bg-info-subtle text-info ms-1">{{ $allUsers->where('provider', '!=', 'guest')->count() }}</span>
+                            <span
+                                class="badge bg-info-subtle text-info ms-1">{{ $allUsers->where('provider', '!=', 'guest')->count() }}</span>
                         </button>
 
                         <button type="button" class="btn btn-sm btn-outline-secondary user-type-quick"
@@ -60,7 +60,8 @@
                             <span class="badge bg-secondary-subtle text-secondary ms-1">{{ $guestUsersCount }}</span>
                         </button>
 
-                        <button type="button" class="btn btn-sm btn-outline-success status-type-quick" data-status="active">
+                        <button type="button" class="btn btn-sm btn-outline-success status-type-quick"
+                            data-status="active">
                             Active
                             <span class="badge bg-success-subtle text-success ms-1">{{ $activeUsersCount }}</span>
                         </button>
@@ -298,7 +299,8 @@
                         error: function(xhr) {
                             Swal.fire({
                                 title: 'Error!',
-                                text: xhr.responseJSON?.error || 'Something went wrong',
+                                text: xhr.responseJSON?.error ||
+                                    'Something went wrong',
                                 icon: 'error'
                             });
                         }
