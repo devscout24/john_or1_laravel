@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\Backend\AdminUserController;
+use App\Http\Controllers\Web\Backend\AppUserManagementController;
 use App\Http\Controllers\Web\Backend\DashboardController;
 use App\Http\Controllers\Web\Backend\DynamicPageController;
 use App\Http\Controllers\Web\Backend\EpisodeManagementController;
@@ -74,6 +75,13 @@ Route::controller(UserManagementController::class)->group(function () {
 
     Route::get('/create-user', 'create')->name('admin.user.create');
     Route::post('/admin/user/store', 'store')->name('admin.user.store');
+});
+
+Route::controller(AppUserManagementController::class)->group(function () {
+    Route::get('/app-users', 'index')->name('app-user.index');
+    Route::get('/app-users/data', 'data')->name('app-user.data');
+    Route::get('/app-users/{appUser}', 'show')->name('app-user.show');
+    Route::post('/app-users/{appUser}/status', 'updateUserStatus')->name('app-user.status.update');
 });
 
 Route::controller(SeriesManagementController::class)->group(function () {

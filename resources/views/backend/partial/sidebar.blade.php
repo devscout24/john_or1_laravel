@@ -170,12 +170,17 @@
                     </a>
                     <div class="collapse" id="users" style="height: 100%;">
                         <ul class="sub-menu">
-                            <li class="side-nav-item active">
-                                <a href="{{ route('admin.user.lists') }}" class="side-nav-link">
-                                    <span class="menu-text">Users List</span>
+                            <li class="side-nav-item {{ Route::currentRouteNamed('app-user.*') ? 'active' : '' }}">
+                                <a href="{{ route('app-user.index') }}" class="side-nav-link">
+                                    <span class="menu-text">Mobile App Users</span>
                                 </a>
                             </li>
-                            <li class="side-nav-item active">
+                            <li class="side-nav-item {{ Route::currentRouteNamed('admin.user.lists') || Route::currentRouteNamed('admin.user.*') ? 'active' : '' }}">
+                                <a href="{{ route('admin.user.lists') }}" class="side-nav-link">
+                                    <span class="menu-text">Admin Users</span>
+                                </a>
+                            </li>
+                            <li class="side-nav-item">
                                 <a href="{{ route('admin.user.create') }}" class="side-nav-link">
                                     <span class="menu-text">Create Admin</span>
                                 </a>
